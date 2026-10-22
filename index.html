@@ -263,6 +263,9 @@ a.qcell::after{content:"▶";position:absolute;bottom:-4px;left:-4px;width:14px;
 /* המסלול מתאים את עצמו לרוחב הכרטיס, לא למסך */
 .about .txt,.me>div{container-type:inline-size}
 @container (max-width:560px){.path{grid-template-columns:1fr}.path .ar{transform:rotate(-90deg);justify-self:center;line-height:1}}
+.personal{margin-top:14px}
+.personal h3{margin-bottom:8px}
+.personal p{color:var(--ink-2);margin:8px 0 0}
 .tst{margin-top:20px;padding-top:20px;border-top:1px solid var(--line)}
 .tst-row{display:flex;gap:12px;overflow-x:auto;padding:6px 2px 10px;scroll-snap-type:x mandatory;scrollbar-width:thin}
 .tst-item{flex:none;border:1px solid var(--line);border-radius:14px;padding:0;background:var(--surface);overflow:hidden;scroll-snap-align:start;box-shadow:var(--shadow);cursor:zoom-in}
@@ -346,6 +349,15 @@ const CONFIG = {
       'את הדרך שלי בפסיכומטרי התחלתי בדיוק כמוך. עברתי במסלול הזה מאפס עד לציון 736 – דרך שדרשה ממני לא פחות מ-8 ניסיונות. תוך כדי הדרך, במקום לתעב את המבחן, עברתי סוג של טרנספורמציה (אפשר לקרוא לזה תסמונת שטוקהולם...) ופשוט התאהבתי בו.',
       'מאז שפיצחתי את המבחן, לקחתי את הניסיון הפדגוגי שלי מהוראת המתמטיקה והתחלתי ללוות תלמידים גם בפסיכומטרי. אם יש משהו אחד שלמדתי מהדרך שלי ומהתלמידים שלימדו אותי, זה שאין שיטות קסם ואין קיצורי דרך. השיטה היחידה שעובדת באמת היא עבודה קשה, עקבית ומותאמת אישית. ההבדל הוא רק אם עובדים קשה "על עיוור", או עובדים קשה ונכון – עם אסטרטגיה מדויקת, תחקור טעויות ובניית הרגלים נכונים.',
     ],
+    // מחוץ לספרים: הצד האישי, בגובה העיניים
+    personal: {
+      title: 'ומחוץ לספרים?',
+      chips: ['🏋️ חדר כושר', '⚽ כדורגל ופיפ"א', '🐕 נוקי', '🕊️ יונה'],
+      paras: [
+        'כשסוגרים את הספרים והסימולציות, אני מאמין גדול באיזון ובפריקת אנרגיות. תמצאו אותי מתאמן באופן קבוע בחדר כושר, עוקב מקרוב אחרי כדורגל (ומעביר לא מעט שעות על פיפ"א ב-PS5), ואיך אפשר בלי בעלי חיים: כרגע גרים איתי נוקי, הכלבה שלי (זו מהתמונה), ויונה שאני מגדל.',
+        'בסוף, הלמידה לפסיכומטרי היא מרתון. כדי להחזיק בו מעמד ולנצח, צריך לשמור לאורך כל הדרך גם על האוויר, על התחביבים ועל החיוך.',
+      ],
+    },
     consultTitle: '🎁 שיחת ייעוץ במתנה (ללא עלות וללא התחייבות)',
     consult: [
       'רוצה להבין בדיוק מה התוצאות שלך אומרות ואיך להתחיל לעבוד? אני מזמין אותך לשיחת ייעוץ ואבחון של חצי שעה איתי – בחינם לגמרי.',
@@ -542,6 +554,13 @@ function renderA11yPanel() {
 }
 applyA11y();
 // פרגונים מתלמידים: שורה נגללת של צילומי מסך; לחיצה מגדילה
+// הצד האישי: צ'יפים + פסקאות (בדף הבית רק הצ'יפים ומשפט אחד)
+function personalBlock(full) {
+  const P = CONFIG.about && CONFIG.about.personal; if (!P) return '';
+  return `<div class="personal"><h3>${esc(P.title)}</h3>
+    <div class="chips">${P.chips.map(c => `<span class="chip">${esc(c)}</span>`).join('')}</div>
+    ${(full ? P.paras : P.paras.slice(-1)).map(t => `<p>${esc(t)}</p>`).join('')}</div>`;
+}
 function testimonialsBlock(asCard) {
   const T = CONFIG.testimonials || []; if (!T.length) return '';
   const inner = `<h3>💬 מה אומרים התלמידים</h3>
@@ -581,6 +600,7 @@ function aboutBlock() {
     <div class="txt"><h3>מי בונה לכם את התוכנית?</h3><div class="muted">${esc(CONFIG.teacherFullName)} · ${esc(CONFIG.teacherTitle)}</div>
       ${pathStrip()}
       ${A.bio.slice(0, 2).map(t => `<p>${esc(t)}</p>`).join('')}
+      ${personalBlock(false)}
       <p><a href="${tiktokLink()}" target="_blank" rel="noopener">עוד הסברים וטיפים בטיקטוק ←</a></p></div></div>`;
 }
 // הדוח לתלמיד: "מה עושים עם הציון הזה עכשיו?" + עליי + שיחת ייעוץ במתנה
@@ -600,7 +620,8 @@ function nextSteps(an, target) {
         <div class="muted">הציונים הרשמיים שלי, ניסיון אחרי ניסיון. ירידות, קיפאון, ושוב עלייה.</div>
         ${journeyChart(g)}
         <blockquote>ציון היעד שלכם יושג. השאלה היא מתי, והאם אתם מוכנים לעשות את הדרך.</blockquote></div>
-      ${CONFIG.studyPhoto ? `<img class="pic" src="${CONFIG.studyPhoto}" alt="${esc(CONFIG.teacherName)} לומד לפסיכומטרי עם נוקי, הכלבה שלו">` : ''}
+      <div>${CONFIG.studyPhoto ? `<img class="pic" src="${CONFIG.studyPhoto}" alt="${esc(CONFIG.teacherName)} לומד לפסיכומטרי עם נוקי, הכלבה שלו">` : ''}
+        ${personalBlock(true)}</div>
     </div>
     ${testimonialsBlock(false)}
     <div class="gift"><h3>${esc(A.consultTitle)}</h3>${A.consult.map(t => `<p>${esc(t)}</p>`).join('')}
