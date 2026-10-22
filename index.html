@@ -149,9 +149,8 @@ h3{font-size:18px;font-weight:700}
 .choice{display:flex;gap:12px;align-items:flex-start;text-align:start;width:100%;border:1.5px solid var(--line);background:var(--surface);border-radius:12px;padding:12px 16px;font-size:18px;line-height:1.55;transition:border-color .12s,background .12s}
 .choice:hover{border-color:var(--ink-2)}
 .choice .n{font-weight:800;color:var(--muted);min-width:28px}
-.choice.sel{border-color:var(--accent);background:var(--accent-soft)}
-.choice.sel .n{color:var(--accent)}
-.navbar{position:fixed;bottom:0;inset-inline:0;background:var(--surface);border-top:1px solid var(--line);z-index:6}
+.choice.sel{border-color:var(--accent);background:var(--accent-soft);box-shadow:0 0 0 1.5px var(--accent);font-weight:700}
+.choice.sel .n{color:var(--accent)}.navbar{position:fixed;bottom:0;inset-inline:0;background:var(--surface);border-top:1px solid var(--line);z-index:6}
 .navbar .in{max-width:1180px;margin:0 auto;padding:10px 16px;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
 .qnums{display:flex;gap:4px;flex-wrap:nowrap;overflow-x:auto;flex:1;min-width:0;padding:4px 2px;scrollbar-width:thin}
 .qnums .qn{flex:none}
@@ -216,6 +215,13 @@ details.qd>summary{cursor:pointer;padding:10px 14px;display:flex;gap:10px;align-
 details.qd>summary::-webkit-details-marker{display:none}
 details.qd .body{padding:4px 16px 14px;border-top:1px solid var(--line);font-size:15.5px}
 details.qd .body .stem{font-size:16px}
+.bands{display:grid;gap:8px;margin-top:12px}
+.band{display:flex;gap:12px;align-items:center;flex-wrap:wrap;padding:10px 14px;border:1px solid var(--line);border-radius:10px;background:var(--surface-2);color:var(--ink-2)}
+.band b{min-width:84px;color:var(--ink)}
+.band.on{border-color:var(--accent);background:var(--accent-soft);color:var(--ink);box-shadow:0 0 0 1px var(--accent)}
+.band .tag{margin-inline-start:auto}
+.lead-form{display:grid;grid-template-columns:1fr auto;gap:8px;margin-top:10px}
+.lead-form input{border:1.5px solid var(--line-2);border-radius:999px;padding:11px 16px;background:var(--surface);font-size:16px;min-width:0;color:var(--ink)}
 .tag{font-size:12px;font-weight:700;border-radius:999px;padding:2px 9px;background:var(--surface-2);border:1px solid var(--line);color:var(--ink-2)}
 .tag.c{background:var(--good-bg);border-color:var(--good-line);color:var(--good-ink)} .tag.w{background:var(--bad-bg);border-color:var(--bad-line);color:var(--bad-ink)} .tag.t{background:var(--warn-bg);border-color:var(--warn-line);color:var(--warn-ink)}
 .kv{display:grid;grid-template-columns:auto 1fr;gap:4px 14px;font-size:15px}
@@ -419,8 +425,14 @@ const CONFIG = {
     consult: [
       'רוצה להבין בדיוק מה התוצאות שלך אומרות ואיך להתחיל לעבוד? אני מזמין אותך לשיחת ייעוץ ואבחון של חצי שעה איתי – בחינם לגמרי.',
       'בשיחה נעבור יחד על הציון והסימולציה שלך, נמפה את נקודות התורפה, ונבנה מפת דרכים ברורה שתראה לך בדיוק מה יידרש ממך כדי להגיע ליעד.',
+      'ואם יהיה מתאים להמשיך יחד, נדבר גם על מסגרת הליווי ועל המחיר. בלי לחץ ובלי התחייבות.',
     ],
+    // משפט קצר על הליווי (דף הבית, ליד יצירת קשר). אפשר להוסיף כאן פורמט/מחיר כשתרצה.
+    howItWorks: 'בשיחת הייעוץ (חינם, חצי שעה) נעבור על התוצאות, ונדבר גם על מסגרת הליווי ועל המחיר.',
   },
+  // כתובת ה-Web App של Google Apps Script שרושם פניות לגיליון (ראו src/lead_sheet.gs ו-README).
+  // ריק = הטופס "רוצה שאחזור אליך?" לא מוצג, והכול כמו קודם (רק ווטסאפ).
+  leadUrl: '',
   teacherPin: '2468',              // קוד כניסה לדוח המורה
   minutes: {verbal: 23, quant: 23, english: 23, essay: 30}, // זמן לפרק במצב "עם זמן"
   realMinutes: 20,                 // זמן פרק בבחינה האמיתית (לחישוב "ציון בתנאי אמת")
@@ -538,7 +550,7 @@ function pathStrip() {
   return `<div class="path" aria-label="המסלול שלי">
     <div class="st"><div class="e">👨‍🏫</div><b>מורה למתמטיקה לבגרויות</b><span>שנים של הוראה ובמרכזי למידה</span></div>
     <div class="ar">←</div>
-    <div class="st"><div class="e">📈</div><b>נבחן בעצמי: 8 ניסיונות</b><span>90 סימולציות, ובסוף 736</span></div>
+    <div class="st"><div class="e">📈</div><b>נבחן בעצמי: 8 ניסיונות</b><span>90 סימולציות, כל טעות אפשרית, ובסוף 736</span></div>
     <div class="ar">←</div>
     <div class="st now"><div class="e">🎯</div><b>היום: מלווה בפסיכומטרי</b><span>עם הכלים של מורה, והניסיון של נבחן</span></div>
   </div>`;
@@ -560,11 +572,11 @@ function legalDoc(kind) {
       <h3>הגבלת אחריות</h3><p>המבחן ניתן כמו שהוא (AS IS). המפעיל עושה מאמץ שהתוכן יהיה נכון ומדויק, אך ייתכנו טעויות, ולא תהיה לו אחריות לנזק שנגרם מהשימוש במבחן או מהסתמכות על תוצאותיו, ככל שהחוק מתיר.</p>
       <h3>דין וסמכות</h3><p>על התנאים חל הדין הישראלי. לשאלות: ${ph} · ${em}</p>`,
     privacy: `<h2>מדיניות פרטיות</h2><p class="muted">עודכן: ${LEGAL_UPDATED}</p>
-      <h3>איזה מידע נאסף</h3><ul><li>שם פרטי (או כינוי), וציון יעד (רשות)</li><li>התשובות, הזמן לכל שאלה והחיבור (אם נכתב)</li><li>אם בחרת בכך: הסכמה לקבל ממני עדכונים</li></ul>
+      <h3>איזה מידע נאסף</h3><ul><li>שם פרטי (או כינוי), וציון יעד (רשות)</li><li>התשובות, הזמן לכל שאלה והחיבור (אם נכתב)</li><li>אם בחרת בכך: הסכמה לקבל ממני עדכונים</li>${CONFIG.leadUrl ? '<li>אם השארת בטופס "רוצה שאחזור אליך?": מספר טלפון</li>' : ''}</ul>
       <p>לא נאספים מספר תעודת זהות, כתובת, פרטי תשלום או מידע רפואי. אין במבחן עוגיות (Cookies), כלי מעקב או פרסום.</p>
       <p>אין חובה חוקית למסור את המידע. בלי שם לא ניתן להתחיל את המבחן, ואפשר להשתמש בכינוי. האתר מאוחסן ב-GitHub Pages, שעשוי לתעד כתובות IP ונתוני גלישה טכניים לצורכי אבטחה, לפי מדיניות הפרטיות של GitHub.</p>
-      <h3>איפה המידע נשמר</h3><p>המידע נשמר <b>רק במכשיר שלך</b> (בזיכרון הדפדפן), כדי שתוכל/י להמשיך מאותה נקודה ולראות את הדוח. הוא לא נשלח לשום שרת.</p>
-      <h3>מתי המידע מגיע אליי</h3><p>רק אם <b>את/ה בוחר/ת לשלוח</b> אותו: בלחיצה על "שליחה לווטסאפ", בהעתקת קוד התוצאות או בהורדת קובץ. ההודעה עוברת דרך ווטסאפ או השירות שבחרת, וכפופה גם למדיניות שלו. קוד התוצאות כולל את התשובות, הזמנים וטקסט החיבור (אם נכתב).</p>
+      <h3>איפה המידע נשמר</h3><p>המידע נשמר <b>במכשיר שלך</b> (בזיכרון הדפדפן), כדי שתוכל/י להמשיך מאותה נקודה ולראות את הדוח. הוא לא נשלח לשום שרת${CONFIG.leadUrl ? ', אלא אם בחרת לשלוח אותו כמתואר למטה' : ''}.</p>
+      <h3>מתי המידע מגיע אליי</h3><p>רק אם <b>את/ה בוחר/ת לשלוח</b> אותו: בלחיצה על "שליחה לווטסאפ", בהעתקת קוד התוצאות או בהורדת קובץ${CONFIG.leadUrl ? ', או בהשארת מספר טלפון בטופס "רוצה שאחזור אליך?". במקרה כזה המספר והתוצאות נשמרים בגיליון פרטי שלי ב-Google, שרק לי יש אליו גישה' : ''}. ההודעה עוברת דרך ווטסאפ או השירות שבחרת, וכפופה גם למדיניות שלו. קוד התוצאות כולל את התשובות, הזמנים וטקסט החיבור (אם נכתב).</p>
       <h3>למה אני משתמש במידע</h3><p>כדי לנתח את התוצאות שלך, להכין דוח ותוכנית לימוד, ולחזור אליך לגבי שיחת הייעוץ. לא אמכור ולא אעביר את המידע לאף גורם אחר. אשלח עדכונים או הצעות שיווקיות רק אם אישרת זאת במפורש (מגיל 18, או בהסכמת הורה). הודעות כאלה יסומנו כ"פרסומת" ויכללו דרך פשוטה להסרה.</p>
       <h3>הזכויות שלך</h3><p>אפשר לבקש ממני לעיין במידע שנשלח אליי, לתקן אותו או למחוק אותו, בפנייה ל-${ph} או ${em}. כדי למחוק את המידע מהמכשיר שלך: לחצו על "מחיקת הנתונים מהמכשיר" למטה, או נקו את נתוני הגלישה בדפדפן.</p>
       <h3>כמה זמן נשמר המידע</h3><p>מידע שנשלח אליי נשמר כל עוד יש בינינו קשר לימודי, ונמחק לבקשתך או כשאין בו עוד צורך.</p>
@@ -879,8 +891,8 @@ function renderHome() {
   return `${brandBar()}<div class="wrap">
   <section class="hero">
     <div class="hi grad" aria-live="off">${HELLOS[0]}</div>
-    <h1>בערך שעה, ותדעו מה הציון שלכם בפסיכומטרי ואיפה הכי קל להעלות אותו.</h1>
-    <p class="lead">אני <b class="grad">${esc(CONFIG.teacherName)}</b>, מורה למתמטיקה שהפך למלווה בפסיכומטרי, אחרי 8 ניסיונות שהסתיימו ב-736. בניתי את האבחון הזה כדי שתדעו בדיוק מאיפה מתחילים. בחינם.</p>
+    <h1>כ-${total} דקות, ותדעו מה הציון שלכם בפסיכומטרי ואיפה הכי קל להעלות אותו.</h1>
+    <p class="lead">אני <b class="grad">${esc(CONFIG.teacherName)}</b>, סטודנט לרפואה ומורה למתמטיקה. עברתי 8 ניסיונות בפסיכומטרי עד 736, אז את הטעויות של המבחן הזה אני מכיר מבפנים. בניתי את האבחון כדי שתדעו בדיוק מאיפה מתחילים. בחינם.</p>
     <div class="row">
       <a class="btn primary big" href="#start-form" data-act="to-form">${inProgress ? 'להמשיך את המבחן ←' : 'להתחיל את האבחון ←'}</a>
       <a class="btn wa" href="${waLink('היי ' + CONFIG.teacherName + ', אשמח לשמוע על ליווי לפסיכומטרי')}" target="_blank" rel="noopener">${ICON.wa}וואטסאפ</a>
@@ -888,7 +900,7 @@ function renderHome() {
     </div>
     ${inProgress ? '' : `<div class="quick-start"><label class="sr-only" for="name-q">שם פרטי</label><input id="name-q" placeholder="השם הפרטי שלך" autocomplete="given-name"><button class="btn primary" data-act="start" data-v="q">מתחילים ←</button>
       <p class="consent-note">בלחיצה על "מתחילים" את/ה מסכים/ה ל<a href="#" data-act="doc" data-v="terms">תנאי השימוש</a> ול<a href="#" data-act="doc" data-v="privacy">מדיניות הפרטיות</a>.</p></div>`}
-    <div class="meta-line"><span>⏱️ כ-${total} דקות (ועוד ${CONFIG.minutes.essay} עם חיבור)</span><span>⏸️ אפשר לעצור בין פרקים ולהמשיך</span><span>🎁 חינם</span></div>
+    <div class="meta-line"><span>⏱️ כ-${total} דקות (ועוד ${CONFIG.minutes.essay} אם מוסיפים חיבור)</span><span>⏸️ אפשר לעצור בין פרקים ולהמשיך</span><span>🎁 חינם</span></div>
   </section>
   <div class="hero-home">
     <div class="stack" id="start-form">
@@ -917,10 +929,12 @@ function renderHome() {
           <li>המבחן נשמר אוטומטית. בין פרק לפרק הזמן עוצר, ואפשר לחזור מאוחר יותר.</li>
         </ul>
       </div>
-      ${aboutBlock()}
-      ${testimonialsBlock(true)}
-      ${contactCard('שאלות? דברו איתי', 'אפשר לפנות בכל שלב, גם לפני המבחן.')}
     </div>
+  </div>
+  <div class="stack" style="margin-top:24px">
+    ${aboutBlock()}
+    ${testimonialsBlock(true)}
+    ${contactCard('שאלות? דברו איתי', 'אפשר לפנות בכל שלב, גם לפני המבחן. ' + esc(CONFIG.about.howItWorks || ''))}
   </div></div>
   ${siteFooter()}`;
 }
@@ -1058,8 +1072,8 @@ function askFinish() {
   }
   const qs = SEC[k].questions, left = qs.filter(q => !S.ans[q.id]).length, marked = qs.filter(q => S.marks[q.id]).length;
   modal(`<h2>לסיים את הפרק?</h2>
-    ${left ? `<div class="ins warn"><b>נשארו ${left} שאלות בלי תשובה</b>בפסיכומטרי אין קנס על טעות. בבחינה האמיתית תמיד מסמנים משהו, גם ניחוש.</div>` : ''}
-    ${marked ? `<p class="sub">סימנת ${marked} שאלות לבדיקה.</p>` : ''}
+    ${left ? `<div class="ins warn"><b>${left === 1 ? 'נשארה שאלה אחת' : `נשארו ${left} שאלות`} בלי תשובה</b>בפסיכומטרי אין קנס על טעות. בבחינה האמיתית תמיד מסמנים משהו, גם ניחוש.</div>` : ''}
+    ${marked ? `<p class="sub">${marked === 1 ? 'סימנת שאלה אחת לבדיקה' : `סימנת ${marked} שאלות לבדיקה`}.</p>` : ''}
     <p class="sub">אחרי הסיום לא תוכלו לחזור לפרק הזה.</p>
     <div class="row"><button class="btn primary" data-act="confirm-finish">כן, לסיים</button><button class="btn" data-act="close">לחזור לפרק</button></div>`);
 }
@@ -1307,7 +1321,88 @@ function videoCard(an) {
     <div class="vids">${list.map(row).join('')}</div>
     <p class="muted" style="margin:10px 0 0">גם במפת התשובות למטה: כל טעות עם ▶ פותחת את הסרטון שלה. ועוד הסברים ב-<a href="${tiktokLink()}" target="_blank" rel="noopener">@${esc(CONFIG.tiktok)}</a></p></div>`;
 }
-const QLEGEND = `<div class="legend"><span><i class="sw" style="background:var(--good)"></i>נכונה</span><span><i class="sw" style="background:var(--bad)"></i>שגויה</span><span><i class="sw" style="background:var(--trap)"></i>שגויה — נפל במלכודת</span><span><i class="sw" style="background:var(--skip)"></i>לא נענתה</span></div>`;
+// "רוצה שאחזור אליך?": מספר טלפון + התוצאות נשלחים לגיליון של המורה (רק אם הוגדר CONFIG.leadUrl, ורק בלחיצה)
+function leadCard(r) {
+  if (!CONFIG.leadUrl) return '';
+  const sent = S && S.id === r.id && S.leadSent;
+  return `<div class="card noprint" id="lead-card"><h3>📲 רוצה שאחזור אליך?</h3>
+    ${sent ? `<div class="ins good"><b>קיבלתי, תודה!</b>אחזור אליך בקרוב לתאם את שיחת הייעוץ.</div>` : `
+    <p class="sub" style="margin:6px 0 0">משאירים מספר, ואני מתקשר לתאם את שיחת הייעוץ (חינם, חצי שעה). התוצאות מגיעות אליי יחד עם המספר, כדי שאגיע מוכן.</p>
+    <div class="lead-form"><label class="sr-only" for="lead-phone">מספר טלפון</label><input id="lead-phone" type="tel" inputmode="tel" autocomplete="tel" placeholder="050-0000000" dir="ltr"><button class="btn primary" data-act="lead-send">שליחה</button></div>
+    <p class="consent-note" style="margin:8px 0 0">המספר ישמש רק כדי לחזור אליך לגבי השיחה. <a href="#" data-act="doc" data-v="privacy">מדיניות פרטיות</a></p>`}</div>`;
+}
+async function sendLead() {
+  const inp = $('#lead-phone'), phone = (inp?.value || '').replace(/[^\d+]/g, '');
+  if (!/^(\+?972|0)5\d{8}$/.test(phone)) { toast('נא להזין מספר נייד תקין'); inp?.focus(); return; }
+  const {r, an} = CURRENT, code = CURRENT.code || await encodeRecord(r);
+  const body = {name: r.name, phone, multi: an.gen.multi, bi: an.gen.bi, verbal: an.dom.verbal, quant: an.dom.quant, english: an.dom.english,
+    target: r.target || '', mode: r.mode, gaps: an.gaps.slice(0, 3).map(x => x.type).join(', '), optin: !!r.optin, code};
+  const btn = $('[data-act=lead-send]'); if (btn) btn.disabled = true;
+  try {
+    await fetch(CONFIG.leadUrl, {method: 'POST', mode: 'no-cors', headers: {'Content-Type': 'text/plain;charset=utf-8'}, body: JSON.stringify(body)});
+    if (S && S.id === r.id) { S.leadSent = true; save(); }
+    const c = $('#lead-card'); if (c) c.outerHTML = leadCard(r);
+    toast('נשלח! אחזור אליך בקרוב');
+  } catch (e) { if (btn) btn.disabled = false; toast('השליחה לא הצליחה. אפשר לשלוח לי בווטסאפ'); }
+}
+// 3 הסברים חינם: טעויות בשאלות קלות/בינוניות קודם (שם הכי קל להרוויח), מלכודות קודם, בלי קטעי קריאה אם יש אחרות
+const FREE_EXPL = 3;
+function freeExplain(an) {
+  const all = [];
+  for (const k of ['verbal', 'quant', 'english']) for (const x of an.sections[k].items) if (x.a && !x.ok) all.push({...x, k});
+  if (!all.length) return '';
+  all.sort((a, b) => (a.q.level > 2) - (b.q.level > 2) || !!a.q.passage - !!b.q.passage || a.q.level - b.q.level || (b.st === 't') - (a.st === 't'));
+  const pick = [];  // קודם אחת מכל תחום, ואז השלמה לפי הסדר
+  for (const x of all) if (pick.length < FREE_EXPL && !pick.some(p => p.k === x.k)) pick.push(x);
+  for (const x of all) if (pick.length < FREE_EXPL && !pick.includes(x)) pick.push(x);
+  const rest = all.length - pick.length;
+  const item = (x, i) => {
+    const q = x.q, en = x.k === 'english', P = q.passage ? PASS[q.passage] : null;
+    return `<details class="qd" ${i === 0 ? 'open' : ''}><summary><b>שאלה ${x.i + 1} ב${SEC[x.k].short}</b><span>${esc(q.type)}</span><span class="tag">${LEVEL[q.level]}</span>${x.st === 't' ? '<span class="tag t">מלכודת</span>' : ''}</summary>
+      <div class="body">${P ? `<details><summary class="muted">הקטע שעליו מבוססת השאלה (להצגה)</summary><div class="${P.lang === 'en' ? 'en' : ''}">${P.html}</div></details>` : ''}
+        <div class="${en ? 'en' : ''}" ${en ? 'lang="en"' : ''}><div class="stem">${q.stem}</div>${q.fig ? `<div class="fig">${q.fig}</div>` : ''}</div>
+        <p><b>התשובה שלך:</b> (${x.a}) <span class="${en ? 'en' : ''}" style="display:inline">${q.choices[x.a - 1]}</span></p>
+        ${q.why && q.why[x.a] ? `<div class="ins ${x.st === 't' ? 'warn' : 'bad'}"><b>${x.st === 't' ? 'זו בדיוק המלכודת' : 'למה זה לא נכון'}</b>${q.why[x.a]}</div>` : ''}
+        <p><b>התשובה הנכונה:</b> (${q.ans}) <span class="${en ? 'en' : ''}" style="display:inline">${q.choices[q.ans - 1]}</span></p>
+        <div class="ins good"><b>ההסבר</b>${q.expl}</div>
+        ${q.video ? `<p>🎬 <a href="${q.video.url}" target="_blank" rel="noopener">${esc(q.video.title)}</a></p>` : ''}</div></details>`;
+  };
+  return `<div class="card"><h3>🔍 ${pick.length === 1 ? 'הטעות שכדאי להבין' : pick.length + ' טעויות שכדאי להבין'} כבר עכשיו</h3>
+    <p class="sub" style="margin:6px 0 10px">בחרתי ${pick.length === 1 ? 'אותה' : 'אותן'} מהשאלות הקלות והבינוניות, כי שם הכי מהר מרוויחים נקודות.${rest ? ' את ההסברים לשאר הטעויות נעבור יחד בשיחת הייעוץ.' : ''}</p>
+    ${pick.map(item).join('')}
+    ${rest ? `<div class="cta-row noprint">${sendCta('לקבל את כל ההסברים בשיחה', 'small')}</div>` : ''}</div>`;
+}
+// הזמן לתלמיד: כמה דקות לקח כל פרק מול 20 בבחינה, ומה זה אומר
+function timeCard(an) {
+  const real = CONFIG.realMinutes * 60, keys = ['verbal', 'quant', 'english'];
+  const row = keys.map(k => { const A = an.sections[k], over = A.used > real + 5;
+    return `<span class="chip ${over ? '' : 'good'}">${SEC[k].short}: ${fmtMin(A.used)}${over ? ' ⚠️' : ''}</span>`; }).join('');
+  const notes = [];
+  for (const k of keys) {
+    const A = an.sections[k];
+    if (A.used > real + 5) notes.push(`<div class="ins bad"><b>${SEC[k].name}: מעבר לזמן</b>בבחינה האמיתית יש ${CONFIG.realMinutes} דקות, ובזמן הזה היו נענות בערך ${A.cutoff} מתוך ${A.n} שאלות.</div>`);
+    else if (A.used < real * .6 && A.pct < .8) notes.push(`<div class="ins info"><b>${SEC[k].name}: סיימת מהר</b>סיימת ב-${fmtMin(A.used)}, ונשארו כמעט ${Math.round((real - A.used) / 60)} דקות. חלק מהטעויות היו כנראה נחסכות בקריאה שנייה ובבדיקה.</div>`);
+    if (A.fast >= 2) notes.push(`<div class="ins warn"><b>${SEC[k].name}: ${A.fast} טעויות בתשובות מהירות מאוד</b>תשובה בפחות מ-${Math.round(A.target * .4)} שניות שיצאה שגויה היא בדרך כלל קריאה חפוזה, לא חוסר ידע.</div>`);
+  }
+  const overT = keys.filter(k => an.sections[k].used > real + 5);
+  return `<div class="card"><h3>⏱️ הזמן שלך</h3><p class="sub" style="margin:6px 0 0">בבחינה האמיתית יש ${CONFIG.realMinutes} דקות לכל פרק.</p>
+    <div class="chips" style="margin-top:10px">${row}</div>
+    ${notes.join('') || '<div class="ins good"><b>קצב טוב</b>עמדת בזמן בכל הפרקים. בשלב הבא נעבוד על דיוק בתוך הזמן הזה.</div>'}
+    ${overT.length ? `<p class="sub">בתנאי אמת הציון המשוער הוא <b>${an.genTimed.multi}</b>. ניהול זמן הוא מיומנות שלומדים, והיא שווה הרבה נקודות.</p>` : ''}</div>`;
+}
+// מה המספר אומר: טווחים כלליים בלבד (הדרישות משתנות בין מוסדות ומשנה לשנה)
+const SCORE_BANDS = [
+  [200, 549, 'עד ~550', 'פותח מכללות רבות וחלק מהחוגים באוניברסיטאות.'],
+  [550, 649, '~550–650', 'פותח רוב החוגים במדעי החברה והרוח באוניברסיטאות.'],
+  [650, 719, '~650–720', 'חוגים תחרותיים יותר, כמו משפטים, מדעי המחשב, הנדסה ופסיכולוגיה.'],
+  [720, 800, '720+', 'רפואה ותוכניות היוקרה.'],
+];
+function scoreMeaning(g) {
+  return `<div class="card"><h3>🎓 מה המספר הזה אומר?</h3>
+    <div class="bands">${SCORE_BANDS.map(([lo, hi, label, txt]) => `<div class="band ${g >= lo && g <= hi ? 'on' : ''}"><b><bdi dir="ltr">${label}</bdi></b><span>${txt}</span>${g >= lo && g <= hi ? '<span class="tag">את/ה כאן</span>' : ''}</div>`).join('')}</div>
+    <p class="muted" style="margin:10px 0 0">תמונה כללית בלבד. דרישות הקבלה משתנות בין מוסדות, חוגים ושנים, ותלויות גם בבגרות. תמיד כדאי לבדוק באתר המוסד.</p></div>`;
+}
+const QLEGEND =`<div class="legend"><span><i class="sw" style="background:var(--good)"></i>נכונה</span><span><i class="sw" style="background:var(--bad)"></i>שגויה</span><span><i class="sw" style="background:var(--trap)"></i>שגויה — נפל במלכודת</span><span><i class="sw" style="background:var(--skip)"></i>לא נענתה</span></div>`;
 function potentialChart(now, pot, target) {
   const W = innerWidth < 560 ? 380 : 560, H = 120, x0 = 10, x1 = W - 10, X = v => x1 - (x1 - x0) * (clamp(v, 200, 800) - 200) / 600;
   // תווית מחוץ לפס כשיש מקום משמאל, ובתוכו כשהפס ארוך מדי
@@ -1365,13 +1460,12 @@ function summaryText(r, an, code) {
 שם: ${r.name}
 ציון משוער רב-תחומי: ${g.multi} | דו-תחומי: ${g.bi}
 מילולי ${d.verbal} · כמותי ${d.quant} · אנגלית ${d.english}${an.essay ? ` · חיבור ${an.essay.final.total}/12 (הערכה)` : ''}
-${r.mode === 'timed' ? 'עשיתי עם זמן' : 'עשיתי בלי הגבלת זמן'}${r.target ? ` · היעד שלי: ${r.target}` : ''}
-מאשר/ת קבלת עדכונים: ${r.optin ? 'כן' : 'לא'}
+${r.mode === 'timed' ? 'עשיתי עם זמן' : 'עשיתי בלי הגבלת זמן'}${r.target ? ` · היעד שלי: ${r.target}` : ''}${r.optin ? '\nמאשר/ת קבלת עדכונים ✓' : ''}
 פערים עיקריים: ${gaps || '—'}
 
 אשמח לקבוע את שיחת הייעוץ החינמית 🙂
 
-קוד תוצאות מלא (לדוח המורה):
+(הקוד הבא פותח ל${CONFIG.teacherName} את הדוח המלא. אין צורך לגעת בו)
 ${code}`;
 }
 
@@ -1404,9 +1498,6 @@ function studentReport(r, an, teacher) {
     ${an.essay.human ? '<div class="muted" style="margin-top:6px">נבדק על ידי המורה ✓</div>' : '<div class="muted" style="margin-top:6px">הערכה אוטומטית גסה. ציון מדויק נותנת רק בדיקה אנושית.</div>'}</div>` : '';
   const strengths = an.strengths.slice(0, 5).map(s => `<span class="chip good">${esc(s.type)} · ${Math.round(s.pct * 100)}%</span>`).join('') || '<span class="sub">החוזקות יתגלו ככל שנתקדם. כל תחום אפשר לבנות.</span>';
   const gaps = an.gaps.slice(0, 3).map((x, i) => `<div class="gap"><span class="rank">${i + 1}</span><div><b>${esc(STUDENT_GAP[x.type] || x.type)}</b><div class="muted">${x.c}/${x.n} נכונות${x.easy ? ` · ${x.easy} מהטעויות בשאלות קלות או בינוניות` : ''}</div></div><span class="pts">+${x.gain} נק׳</span></div>`).join('');
-  const overT = Object.values(an.sections).filter(A => A.used > CONFIG.realMinutes * 60 + 5);
-  const timeNote = overT.length ? `<div class="card"><h3>⏱️ הזמן</h3><p class="sub">${overT.map(A => `ב${A.s.the} נדרשו ${fmtMin(A.used)}. בבחינה האמיתית יש ${CONFIG.realMinutes} דקות, ובזמן הזה היו נענות בערך ${A.cutoff} מתוך ${A.n} שאלות`).join('. ')}.</p>
-     <p class="sub">בתנאי אמת הציון המשוער הוא <b>${an.genTimed.multi}</b>. ניהול זמן הוא מיומנות שלומדים, והיא שווה הרבה נקודות.</p></div>` : '';
   const essayTips = an.essay ? `<div class="card"><h3>✍️ דגשים לחיבור</h3>${an.essay.est.tips.slice(0, 3).map(t => `<div class="ins info">${t.t}</div>`).join('') || '<p class="sub">חיבור מבוסס. בבדיקה אנושית נחדד את הניסוח והטיעון.</p>'}</div>` : '';
   const easyLostAll = Object.values(an.sections).reduce((t, A) => t + A.easyFix, 0);
   const hardLostAll = Object.values(an.sections).reduce((t, A) => t + A.items.filter(x => x.a && !x.ok && x.q.level === 3).length, 0);
@@ -1426,7 +1517,9 @@ function studentReport(r, an, teacher) {
       </div>
       <div class="cta-row noprint">${sendCta('לשלוח לעילאי את התוצאות ולקבוע שיחת ייעוץ חינם')}</div>
     </div></div></div>
+  ${teacher ? '' : leadCard(r)}
   <div class="grid3">${domCards}${essayCard}</div>
+  ${partial ? '' : scoreMeaning(g.multi)}
   <div class="grid2">
     <div class="card"><h3>💪 מה כבר עובד לך</h3><div class="chips" style="margin-top:12px">${strengths}</div></div>
     <div class="card"><h3>🎯 איפה מסתתרות הנקודות שלך</h3><div class="muted">כמה נקודות בציון הכללי שווה כל תחום</div>${gaps || '<p class="sub">כמעט אין טעויות. נעבוד על דיוק ומהירות.</p>'}
@@ -1435,11 +1528,13 @@ function studentReport(r, an, teacher) {
   </div>
   ${partial ? '' : `<div class="card"><h3>מהיום לפוטנציאל</h3>${potentialChart(g.multi, pot.multi, target)}
     ${easyLostAll > hardLostAll ? '<p class="sub">רוב הנקודות שחסרות לך נמצאות בשאלות שהן <b>לא</b> הקשות במבחן. זה החלק בפסיכומטרי שהכי מהר לשפר עם שיטה נכונה, תחקור טעויות וליווי צמוד.</p>' : '<p class="sub">הנקודות הבאות שלך נמצאות בשאלות המאתגרות. כאן נדרשים כלים מתקדמים ואסטרטגיה מדויקת, ובדיוק על זה עובדים בליווי.</p>'}</div>`}
+  ${freeExplain(an)}
+  ${timeCard(an)}
   ${videoCard(an)}
-  <div class="card"><h3>מפת התשובות</h3><p class="muted">טעות עם ▶ פותחת סרטון הסבר בטיקטוק. ההסברים המלאים לכל שאלה יחכו לנו בשיחה.</p>
+  <div class="card"><h3>מפת התשובות</h3><p class="muted">טעות עם ▶ פותחת סרטון הסבר בטיקטוק. את ההסברים לשאר השאלות נעבור יחד בשיחה.</p>
     ${['verbal', 'quant', 'english'].map(k => `<div style="margin-top:12px"><b>${SEC[k].name}</b>${qmap(an.sections[k], false)}</div>`).join('')}
     <div style="margin-top:12px">${QLEGEND}</div></div>
-  ${timeNote}${essayTips}
+  ${essayTips}
   ${nextSteps(an, target)}
   <div class="card stack noprint"><h3>📤 התוצאות שלך</h3>
     <p class="sub">שליחה בלחיצה אחת בווטסאפ: סיכום קצר, וקוד שממנו נפתח הדוח המלא${an.essay ? ' (כולל החיבור לבדיקה אנושית)' : ''}.</p>
@@ -1608,6 +1703,7 @@ document.addEventListener('click', async ev => {
     case 'prev': S.qi = Math.max(0, S.qi - 1); save(); render(); break;
     case 'mark': { const q = SEC[curKey()].questions[S.qi]; S.marks[q.id] = !S.marks[q.id]; save(); render(); break; }
     case 'formulas': formulasModal(); break;
+    case 'lead-send': sendLead(); break;
     case 'finish': askFinish(); break;
     case 'confirm-finish': finishPhase(); break;
     case 'close': case 'bg': closeModal(); break;
@@ -1693,6 +1789,7 @@ document.addEventListener('keydown', ev => {
     return;
   }
   if (ev.key === 'Enter' && ev.target.id === 'pin') { $('[data-act=pin-ok]')?.click(); return; }
+  if (ev.key === 'Enter' && ev.target.id === 'lead-phone') { sendLead(); return; }
   if (ev.key === 'Enter' && (ev.target.id === 'name' || ev.target.id === 'name-q')) { (ev.target.id === 'name-q' ? $('[data-act=start][data-v=q]') : $('#start-form [data-act=start]'))?.click(); return; }
   if (!S || S.stage !== 'run' || curKey() === 'essay' || $('#modal-root').innerHTML) return;
   if (['1', '2', '3', '4'].includes(ev.key)) { const q = SEC[curKey()].questions[S.qi]; S.ans[q.id] = +ev.key; save(); render(); }
