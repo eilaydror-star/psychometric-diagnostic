@@ -430,9 +430,12 @@ const CONFIG = {
     // משפט קצר על הליווי (דף הבית, ליד יצירת קשר). אפשר להוסיף כאן פורמט/מחיר כשתרצה.
     howItWorks: 'בשיחת הייעוץ (חינם, חצי שעה) נעבור על התוצאות, ונדבר גם על מסגרת הליווי ועל המחיר.',
   },
-  // כתובת ה-Web App של Google Apps Script שרושם פניות לגיליון (ראו src/lead_sheet.gs ו-README).
-  // ריק = הטופס "רוצה שאחזור אליך?" לא מוצג, והכול כמו קודם (רק ווטסאפ).
-  leadUrl: '',
+  // הטופס "רוצה שאחזור אליך?" שולח ל-Google Form "פניות מהאבחון" (התגובות בגיליון "פניות מהאבחון - תגובות", ומייל על כל תגובה).
+  // url ריק = הטופס לא מוצג באתר. המספרים הם מזהי השדות בטופס (entry.XXX).
+  leadForm: {
+    url: 'https://docs.google.com/forms/d/e/1FAIpQLScuFQVT38QfxcK7o1diBXV3meJvBAJAoJFlw9DSOlAKMBEvCA/formResponse',
+    fields: {name: 338451258, phone: 454271998, email: 929502395, results: 211868837, code: 629827510},
+  },
   teacherPin: '2468',              // קוד כניסה לדוח המורה
   minutes: {verbal: 23, quant: 23, english: 23, essay: 30}, // זמן לפרק במצב "עם זמן"
   realMinutes: 20,                 // זמן פרק בבחינה האמיתית (לחישוב "ציון בתנאי אמת")
@@ -572,11 +575,11 @@ function legalDoc(kind) {
       <h3>הגבלת אחריות</h3><p>המבחן ניתן כמו שהוא (AS IS). המפעיל עושה מאמץ שהתוכן יהיה נכון ומדויק, אך ייתכנו טעויות, ולא תהיה לו אחריות לנזק שנגרם מהשימוש במבחן או מהסתמכות על תוצאותיו, ככל שהחוק מתיר.</p>
       <h3>דין וסמכות</h3><p>על התנאים חל הדין הישראלי. לשאלות: ${ph} · ${em}</p>`,
     privacy: `<h2>מדיניות פרטיות</h2><p class="muted">עודכן: ${LEGAL_UPDATED}</p>
-      <h3>איזה מידע נאסף</h3><ul><li>שם פרטי (או כינוי), וציון יעד (רשות)</li><li>התשובות, הזמן לכל שאלה והחיבור (אם נכתב)</li><li>אם בחרת בכך: הסכמה לקבל ממני עדכונים</li>${CONFIG.leadUrl ? '<li>אם השארת בטופס "רוצה שאחזור אליך?": מספר טלפון</li>' : ''}</ul>
+      <h3>איזה מידע נאסף</h3><ul><li>שם פרטי (או כינוי), וציון יעד (רשות)</li><li>התשובות, הזמן לכל שאלה והחיבור (אם נכתב)</li><li>אם בחרת בכך: הסכמה לקבל ממני עדכונים</li>${CONFIG.leadForm.url ? '<li>אם השארת בטופס "רוצה שאחזור אליך?": מספר טלפון, ואימייל אם הוספת</li>' : ''}</ul>
       <p>לא נאספים מספר תעודת זהות, כתובת, פרטי תשלום או מידע רפואי. אין במבחן עוגיות (Cookies), כלי מעקב או פרסום.</p>
       <p>אין חובה חוקית למסור את המידע. בלי שם לא ניתן להתחיל את המבחן, ואפשר להשתמש בכינוי. האתר מאוחסן ב-GitHub Pages, שעשוי לתעד כתובות IP ונתוני גלישה טכניים לצורכי אבטחה, לפי מדיניות הפרטיות של GitHub.</p>
-      <h3>איפה המידע נשמר</h3><p>המידע נשמר <b>במכשיר שלך</b> (בזיכרון הדפדפן), כדי שתוכל/י להמשיך מאותה נקודה ולראות את הדוח. הוא לא נשלח לשום שרת${CONFIG.leadUrl ? ', אלא אם בחרת לשלוח אותו כמתואר למטה' : ''}.</p>
-      <h3>מתי המידע מגיע אליי</h3><p>רק אם <b>את/ה בוחר/ת לשלוח</b> אותו: בלחיצה על "שליחה לווטסאפ", בהעתקת קוד התוצאות או בהורדת קובץ${CONFIG.leadUrl ? ', או בהשארת מספר טלפון בטופס "רוצה שאחזור אליך?". במקרה כזה המספר והתוצאות נשמרים בגיליון פרטי שלי ב-Google, שרק לי יש אליו גישה' : ''}. ההודעה עוברת דרך ווטסאפ או השירות שבחרת, וכפופה גם למדיניות שלו. קוד התוצאות כולל את התשובות, הזמנים וטקסט החיבור (אם נכתב).</p>
+      <h3>איפה המידע נשמר</h3><p>המידע נשמר <b>במכשיר שלך</b> (בזיכרון הדפדפן), כדי שתוכל/י להמשיך מאותה נקודה ולראות את הדוח. הוא לא נשלח לשום שרת${CONFIG.leadForm.url ? ', אלא אם בחרת לשלוח אותו כמתואר למטה' : ''}.</p>
+      <h3>מתי המידע מגיע אליי</h3><p>רק אם <b>את/ה בוחר/ת לשלוח</b> אותו: בלחיצה על "שליחה לווטסאפ", בהעתקת קוד התוצאות או בהורדת קובץ${CONFIG.leadForm.url ? ', או בהשארת פרטים בטופס "רוצה שאחזור אליך?". במקרה כזה הפרטים והתוצאות נשלחים דרך Google Forms ונשמרים בגיליון פרטי שלי ב-Google, שרק לי יש אליו גישה' : ''}. ההודעה עוברת דרך ווטסאפ או השירות שבחרת, וכפופה גם למדיניות שלו. קוד התוצאות כולל את התשובות, הזמנים וטקסט החיבור (אם נכתב).</p>
       <h3>למה אני משתמש במידע</h3><p>כדי לנתח את התוצאות שלך, להכין דוח ותוכנית לימוד, ולחזור אליך לגבי שיחת הייעוץ. לא אמכור ולא אעביר את המידע לאף גורם אחר. אשלח עדכונים או הצעות שיווקיות רק אם אישרת זאת במפורש (מגיל 18, או בהסכמת הורה). הודעות כאלה יסומנו כ"פרסומת" ויכללו דרך פשוטה להסרה.</p>
       <h3>הזכויות שלך</h3><p>אפשר לבקש ממני לעיין במידע שנשלח אליי, לתקן אותו או למחוק אותו, בפנייה ל-${ph} או ${em}. כדי למחוק את המידע מהמכשיר שלך: לחצו על "מחיקת הנתונים מהמכשיר" למטה, או נקו את נתוני הגלישה בדפדפן.</p>
       <h3>כמה זמן נשמר המידע</h3><p>מידע שנשלח אליי נשמר כל עוד יש בינינו קשר לימודי, ונמחק לבקשתך או כשאין בו עוד צורך.</p>
@@ -1321,25 +1324,31 @@ function videoCard(an) {
     <div class="vids">${list.map(row).join('')}</div>
     <p class="muted" style="margin:10px 0 0">גם במפת התשובות למטה: כל טעות עם ▶ פותחת את הסרטון שלה. ועוד הסברים ב-<a href="${tiktokLink()}" target="_blank" rel="noopener">@${esc(CONFIG.tiktok)}</a></p></div>`;
 }
-// "רוצה שאחזור אליך?": מספר טלפון + התוצאות נשלחים לגיליון של המורה (רק אם הוגדר CONFIG.leadUrl, ורק בלחיצה)
+// "רוצה שאחזור אליך?": טלפון (+ מייל רשות) והתוצאות נשלחים ל-Google Form של המורה (רק אם הוגדר CONFIG.leadForm.url, ורק בלחיצה)
 function leadCard(r) {
-  if (!CONFIG.leadUrl) return '';
+  if (!CONFIG.leadForm.url) return '';
   const sent = S && S.id === r.id && S.leadSent;
   return `<div class="card noprint" id="lead-card"><h3>📲 רוצה שאחזור אליך?</h3>
     ${sent ? `<div class="ins good"><b>קיבלתי, תודה!</b>אחזור אליך בקרוב לתאם את שיחת הייעוץ.</div>` : `
     <p class="sub" style="margin:6px 0 0">משאירים מספר, ואני מתקשר לתאם את שיחת הייעוץ (חינם, חצי שעה). התוצאות מגיעות אליי יחד עם המספר, כדי שאגיע מוכן.</p>
-    <div class="lead-form"><label class="sr-only" for="lead-phone">מספר טלפון</label><input id="lead-phone" type="tel" inputmode="tel" autocomplete="tel" placeholder="050-0000000" dir="ltr"><button class="btn primary" data-act="lead-send">שליחה</button></div>
+    <div class="lead-form"><label class="sr-only" for="lead-phone">מספר טלפון</label><input id="lead-phone" type="tel" inputmode="tel" autocomplete="tel" placeholder="טלפון: 050-0000000" dir="ltr"><button class="btn primary" data-act="lead-send">שליחה</button>
+      <label class="sr-only" for="lead-email">אימייל (רשות)</label><input id="lead-email" type="email" inputmode="email" autocomplete="email" placeholder="אימייל (רשות)" dir="ltr" style="grid-column:1/-1"></div>
     <p class="consent-note" style="margin:8px 0 0">המספר ישמש רק כדי לחזור אליך לגבי השיחה. <a href="#" data-act="doc" data-v="privacy">מדיניות פרטיות</a></p>`}</div>`;
 }
 async function sendLead() {
   const inp = $('#lead-phone'), phone = (inp?.value || '').replace(/[^\d+]/g, '');
   if (!/^(\+?972|0)5\d{8}$/.test(phone)) { toast('נא להזין מספר נייד תקין'); inp?.focus(); return; }
-  const {r, an} = CURRENT, code = CURRENT.code || await encodeRecord(r);
-  const body = {name: r.name, phone, multi: an.gen.multi, bi: an.gen.bi, verbal: an.dom.verbal, quant: an.dom.quant, english: an.dom.english,
-    target: r.target || '', mode: r.mode, gaps: an.gaps.slice(0, 3).map(x => x.type).join(', '), optin: !!r.optin, code};
+  const email = ($('#lead-email')?.value || '').trim();
+  if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { toast('כתובת המייל לא תקינה'); $('#lead-email')?.focus(); return; }
+  const {r, an} = CURRENT, code = CURRENT.code || await encodeRecord(r), F = CONFIG.leadForm.fields;
+  const results = `רב-תחומי ${an.gen.multi} · דו-תחומי ${an.gen.bi} · מילולי ${an.dom.verbal} · כמותי ${an.dom.quant} · אנגלית ${an.dom.english}`
+    + `${r.target ? ' · יעד ' + r.target : ''} · ${r.mode === 'timed' ? 'עם זמן' : 'בלי זמן'} · פערים: ${an.gaps.slice(0, 3).map(x => x.type).join(', ') || '—'}`
+    + ` · עדכונים: ${r.optin ? 'כן' : 'לא'}`;
+  const body = new URLSearchParams({['entry.' + F.name]: r.name || '', ['entry.' + F.phone]: phone, ['entry.' + F.email]: email,
+    ['entry.' + F.results]: results, ['entry.' + F.code]: code});
   const btn = $('[data-act=lead-send]'); if (btn) btn.disabled = true;
   try {
-    await fetch(CONFIG.leadUrl, {method: 'POST', mode: 'no-cors', headers: {'Content-Type': 'text/plain;charset=utf-8'}, body: JSON.stringify(body)});
+    await fetch(CONFIG.leadForm.url, {method: 'POST', mode: 'no-cors', body});
     if (S && S.id === r.id) { S.leadSent = true; save(); }
     const c = $('#lead-card'); if (c) c.outerHTML = leadCard(r);
     toast('נשלח! אחזור אליך בקרוב');
