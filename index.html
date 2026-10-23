@@ -221,6 +221,9 @@ details.qd .body .stem{font-size:16px}
 .band b{min-width:84px;color:var(--ink)}
 .band.on{border-color:var(--accent);background:var(--accent-soft);color:var(--ink);box-shadow:0 0 0 1px var(--accent)}
 .band .tag{margin-inline-start:auto}
+.band.goal:not(.on){border-color:var(--good-line);border-style:dashed}
+.band .tag.goal{background:var(--good-bg);border-color:var(--good-line);color:var(--good-ink)}
+.band .tag + .tag{margin-inline-start:6px}
 .lead-form{display:grid;grid-template-columns:1fr auto;gap:8px;margin-top:10px}
 .lead-form input{border:1.5px solid var(--line-2);border-radius:999px;padding:11px 16px;background:var(--surface);font-size:16px;min-width:0;color:var(--ink)}
 .tag{font-size:12px;font-weight:700;border-radius:999px;padding:2px 9px;background:var(--surface-2);border:1px solid var(--line);color:var(--ink-2)}
@@ -413,7 +416,7 @@ const CONFIG = {
     intro: 'מבחן דיאגנוסטי הוא רק נקודת ההתחלה – הוא לא קובע את הציון הסופי שלך, אלא מראה לנו בדיוק איפה היתרונות שלך ואיפה כדאי להתמקד.',
     bio: [
       'שמי עילאי, סטודנט לרפואה באוניברסיטת בר-אילן ומורה למתמטיקה. במשך שנים לימדתי תלמידים לבגרויות במתמטיקה והוריתי במרכזי למידה, כך שהוראה ופירוק של חומר מורכב הם הבית השני שלי.',
-      'את הדרך שלי בפסיכומטרי התחלתי בדיוק כמוך. התחלתי מאפס ידע, ועברתי במסלול הזה עד לציון 736 – דרך שדרשה ממני לא פחות מ-8 ניסיונות. תוך כדי הדרך, במקום לתעב את המבחן, עברתי סוג של טרנספורמציה (אפשר לקרוא לזה תסמונת שטוקהולם...) ופשוט התאהבתי בו.',
+      'את הדרך שלי בפסיכומטרי התחלתי בדיוק כמוך. התחלתי עם ידע חלקי: בכמותי הרגשתי בבית, אבל במילולי ובאנגלית היה לי עוד הרבה מה ללמוד. משם עברתי במסלול הזה עד לציון 736 – דרך שדרשה ממני לא פחות מ-8 ניסיונות. תוך כדי הדרך, במקום לתעב את המבחן, עברתי סוג של טרנספורמציה (אפשר לקרוא לזה תסמונת שטוקהולם...) ופשוט התאהבתי בו.',
       'מאז שפיצחתי את המבחן, לקחתי את הניסיון הפדגוגי שלי מהוראת המתמטיקה והתחלתי ללוות תלמידים גם בפסיכומטרי. אם יש משהו אחד שלמדתי מהדרך שלי ומהתלמידים שלימדו אותי, זה שאין שיטות קסם ואין קיצורי דרך. השיטה היחידה שעובדת באמת היא עבודה קשה, עקבית ומותאמת אישית. ההבדל הוא רק אם עובדים קשה "על עיוור", או עובדים קשה ונכון – עם אסטרטגיה מדויקת, תחקור טעויות ובניית הרגלים נכונים.',
     ],
     // מחוץ לספרים: הצד האישי, בגובה העיניים
@@ -440,6 +443,8 @@ const CONFIG = {
     url: 'https://docs.google.com/forms/d/e/1FAIpQLScuFQVT38QfxcK7o1diBXV3meJvBAJAoJFlw9DSOlAKMBEvCA/formResponse',
     fields: {name: 338451258, phone: 454271998, email: 929502395, results: 211868837, code: 629827510},
   },
+  // ספירה אנונימית (בלי שם, תשובות או מזהה) ל-Google Form "ספירת מבקרים באבחון": הסיכום בלשונית "תגובות" בטופס
+  statsForm: {url: 'https://docs.google.com/forms/d/e/1FAIpQLSc8N6M92-OUfN0L-QYKY14gxz8zNJ7-7FoM0aeNhvPi8ZCkpg/formResponse', field: 199736074},
   // קוד כניסה לדוח המורה: נשמר רק ה-SHA-256 שלו, כדי שלא יופיע בקוד. להחלפה: python -c "import hashlib;print(hashlib.sha256(b'NEW').hexdigest())"
   teacherPinHash: 'cf038699c69d6031bf367c64c87c70dac42e6aaa9735630adeebbd0520b8ad67',
   minutes: {verbal: 23, quant: 23, english: 23, essay: 30}, // זמן לפרק במצב "עם זמן"
@@ -493,6 +498,14 @@ function interp(points, x) {
     return y0 + (y1 - y0) * (x - x0) / (x1 - x0);
   }
   return points[points.length - 1][1];
+}
+// ספירה אנונימית: רק שם האירוע נשלח. לא נספר בבדיקות מקומיות ולא בכניסת מורה
+const TRACK = {visit: 'כניסה', start: 'התחלת מבחן', finish: 'סיום מבחן', lead: 'השאיר פרטים'};
+function track(ev) {
+  const F = CONFIG.statsForm;
+  if (!F || !F.url || !/^https?:$/.test(location.protocol) || /^(localhost|127\.)/.test(location.hostname) || (typeof view !== 'undefined' && view.teacher)) return;
+  if (ev === 'visit') { try { if (sessionStorage.getItem('psy_v')) return; sessionStorage.setItem('psy_v', '1'); } catch (e) {} }
+  try { fetch(F.url, {method: 'POST', mode: 'no-cors', body: new URLSearchParams({['entry.' + F.field]: TRACK[ev]})}).catch(() => {}); } catch (e) {}
 }
 async function sha256Hex(s) {
   try { const b = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(s)); return [...new Uint8Array(b)].map(x => x.toString(16).padStart(2, '0')).join(''); }
@@ -585,7 +598,7 @@ function legalDoc(kind) {
       <h3>דין וסמכות</h3><p>על התנאים חל הדין הישראלי. לשאלות: ${ph} · ${em}</p>`,
     privacy: `<h2>מדיניות פרטיות</h2><p class="muted">עודכן: ${LEGAL_UPDATED}</p>
       <h3>איזה מידע נאסף</h3><ul><li>שם פרטי (או כינוי), וציון יעד (רשות)</li><li>התשובות, הזמן לכל שאלה והחיבור (אם נכתב)</li><li>אם בחרת בכך: הסכמה לקבל ממני עדכונים</li>${CONFIG.leadForm.url ? '<li>אם השארת בטופס "רוצה שאחזור אליך?": מספר טלפון, ואימייל אם הוספת</li>' : ''}</ul>
-      <p>לא נאספים מספר תעודת זהות, כתובת, פרטי תשלום או מידע רפואי. אין במבחן עוגיות (Cookies), כלי מעקב או פרסום.</p>
+      <p>לא נאספים מספר תעודת זהות, כתובת, פרטי תשלום או מידע רפואי. אין במבחן עוגיות (Cookies), פרסום או כלי מעקב של צד שלישי. נספרת רק ספירה אנונימית של כניסות, התחלות וסיומים (דרך Google Forms), בלי שם, בלי תשובות ובלי שום פרט מזהה.</p>
       <p>אין חובה חוקית למסור את המידע. בלי שם לא ניתן להתחיל את המבחן, ואפשר להשתמש בכינוי. האתר מאוחסן ב-GitHub Pages, שעשוי לתעד כתובות IP ונתוני גלישה טכניים לצורכי אבטחה, לפי מדיניות הפרטיות של GitHub.</p>
       <h3>איפה המידע נשמר</h3><p>המידע נשמר <b>במכשיר שלך</b> (בזיכרון הדפדפן), כדי שתוכל/י להמשיך מאותה נקודה ולראות את הדוח. הוא לא נשלח לשום שרת${CONFIG.leadForm.url ? ', אלא אם בחרת לשלוח אותו כמתואר למטה' : ''}.</p>
       <h3>מתי המידע מגיע אליי</h3><p>רק אם <b>את/ה בוחר/ת לשלוח</b> אותו: בלחיצה על "שליחה לווטסאפ", בהעתקת קוד התוצאות או בהורדת קובץ${CONFIG.leadForm.url ? ', או בהשארת פרטים בטופס "רוצה שאחזור אליך?". במקרה כזה הפרטים והתוצאות נשלחים דרך Google Forms ונשמרים בגיליון פרטי שלי ב-Google, שרק לי יש אליו גישה' : ''}. ההודעה עוברת דרך ווטסאפ או השירות שבחרת, וכפופה גם למדיניות שלו. קוד התוצאות כולל את התשובות, הזמנים וטקסט החיבור (אם נכתב).</p>
@@ -1095,7 +1108,7 @@ function finishPhase() {
   closeModal();
   if (S.p < S.phases.length - 1) { S.p++; S.qi = 0; S.stage = 'intro'; save(); stopTicker(); render(); return; }
   S.stage = 'done'; S.finished = new Date().toISOString(); save(); stopTicker();
-  const r = buildRecord(); const h = lsGet(HIST, []).filter(x => x.id !== r.id); h.unshift(r); lsSet(HIST, h.slice(0, 50));
+  const r = buildRecord(); const h = lsGet(HIST, []).filter(x => x.id !== r.id); h.unshift(r); lsSet(HIST, h.slice(0, 50)); track('finish');
   view.tab = 'student'; render();
 }
 
@@ -1360,6 +1373,7 @@ async function sendLead() {
   try {
     await fetch(CONFIG.leadForm.url, {method: 'POST', mode: 'no-cors', body});
     if (S && S.id === r.id) { S.leadSent = true; save(); }
+    track('lead');
     const c = $('#lead-card'); if (c) c.outerHTML = leadCard(r);
     toast('נשלח! אחזור אליך בקרוב');
   } catch (e) { if (btn) btn.disabled = false; toast('השליחה לא הצליחה. אפשר לשלוח לי בווטסאפ'); }
@@ -1416,9 +1430,25 @@ const SCORE_BANDS = [
   [650, 719, '~650–720', 'חוגים תחרותיים יותר, כמו משפטים, מדעי המחשב, הנדסה ופסיכולוגיה.'],
   [720, 800, '720+', 'רפואה ותוכניות היוקרה.'],
 ];
-function scoreMeaning(g) {
+const NATIONAL_AVG = {score: 574, year: 2025}; // ממוצע נבחני העברית, לפי דוח מאל"ו לשנה זו
+// מה נדרש כדי להגיע ליעד: לפי רמת היעד (מהנמוכה לגבוהה) ולפי גודל הפער
+const TARGET_TIERS = [
+  [0, 'יסודות ושיטה: לסגור את הטעויות בשאלות הקלות והבינוניות, ולבנות שגרת תרגול קבועה.'],
+  [600, 'שיטה, תחקור טעויות וניהול זמן. ברמה הזאת רוב הנקודות מגיעות מהשאלות הבינוניות.'],
+  [680, 'דיוק כמעט מלא בשאלות הקלות והבינוניות, כלים לשאלות הקשות, וסימולציות קבועות בתנאי אמת.'],
+  [720, 'רמת עילית: כמעט בלי טעויות, מהירות גבוהה, ועבודה ממוקדת על השאלות הקשות ביותר. זה דורש התמדה לאורך זמן.'],
+];
+const GAP_NOTE = gap => gap <= 0 ? 'כבר עכשיו את/ה ברמת היעד. העבודה היא לייצב את הציון ולבנות מרווח ביטחון ליום הבחינה.'
+  : gap <= 60 ? `פער של ${gap} נקודות: קרוב. בדרך כלל זה עניין של דיוק וניהול זמן, יותר מאשר חומר חדש.`
+  : gap <= 150 ? `פער של ${gap} נקודות: בהחלט אפשרי, עם תוכנית מסודרת ועבודה עקבית.`
+  : `פער של ${gap} נקודות: פער גדול, שדורש תוכנית ארוכה ועבודה עקבית. אפשרי, אבל לא בקיצורי דרך.`;
+function scoreMeaning(g, target) {
+  const inBand = (v, lo, hi) => v >= lo && v <= hi;
+  const tier = target ? TARGET_TIERS.filter(([min]) => target >= min).pop()[1] : '';
   return `<div class="card"><h3>🎓 מה המספר הזה אומר?</h3>
-    <div class="bands">${SCORE_BANDS.map(([lo, hi, label, txt]) => `<div class="band ${g >= lo && g <= hi ? 'on' : ''}"><b><bdi dir="ltr">${label}</bdi></b><span>${txt}</span>${g >= lo && g <= hi ? '<span class="tag">את/ה כאן</span>' : ''}</div>`).join('')}</div>
+    <p class="sub" style="margin:6px 0 0">ממוצע הנבחנים בעברית ב-${NATIONAL_AVG.year} היה בערך <b>${NATIONAL_AVG.score}</b>. הציון המשוער שלך ${Math.abs(g - NATIONAL_AVG.score) < 15 ? 'קרוב לממוצע' : g > NATIONAL_AVG.score ? `גבוה ממנו בכ-${g - NATIONAL_AVG.score} נקודות` : `נמוך ממנו בכ-${NATIONAL_AVG.score - g} נקודות`}.</p>
+    <div class="bands">${SCORE_BANDS.map(([lo, hi, label, txt]) => `<div class="band ${inBand(g, lo, hi) ? 'on' : ''} ${target && inBand(target, lo, hi) ? 'goal' : ''}"><b><bdi dir="ltr">${label}</bdi></b><span>${txt}</span>${inBand(g, lo, hi) ? '<span class="tag">את/ה כאן</span>' : ''}${target && inBand(target, lo, hi) ? `<span class="tag goal">היעד שלך: ${target}</span>` : ''}</div>`).join('')}</div>
+    ${target ? `<div class="ins info"><b>מה נדרש כדי להגיע ל-${target}</b>${GAP_NOTE(target - g)} ${tier}</div>` : ''}
     <p class="muted" style="margin:10px 0 0">תמונה כללית בלבד. דרישות הקבלה משתנות בין מוסדות, חוגים ושנים, ותלויות גם בבגרות. תמיד כדאי לבדוק באתר המוסד.</p></div>`;
 }
 const QLEGEND =`<div class="legend"><span><i class="sw" style="background:var(--good)"></i>נכונה</span><span><i class="sw" style="background:var(--bad)"></i>שגויה</span><span><i class="sw" style="background:var(--trap)"></i>שגויה — נפל במלכודת</span><span><i class="sw" style="background:var(--skip)"></i>לא נענתה</span></div>`;
@@ -1538,7 +1568,7 @@ function studentReport(r, an, teacher) {
     </div></div></div>
   ${teacher ? '' : leadCard(r)}
   <div class="grid3">${domCards}${essayCard}</div>
-  ${partial ? '' : scoreMeaning(g.multi)}
+  ${partial ? '' : scoreMeaning(g.multi, target)}
   <div class="grid2">
     <div class="card"><h3>💪 מה כבר עובד לך</h3><div class="chips" style="margin-top:12px">${strengths}</div></div>
     <div class="card"><h3>🎯 איפה מסתתרות הנקודות שלך</h3><div class="muted">כמה נקודות בציון הכללי שווה כל תחום</div>${gaps || '<p class="sub">כמעט אין טעויות. נעבוד על דיוק ומהירות.</p>'}
@@ -1707,7 +1737,7 @@ document.addEventListener('click', async ev => {
     case 'setup-go': {
       const tg = Math.round(+$('#target').value);
       S = newState({name: setupName, target: tg >= 200 && tg <= 800 ? String(tg) : '', mode: document.querySelector('input[name=mode]:checked').value, withEssay: $('#withEssay').checked});
-      setupName = null; atHome = false; save(); render(); break;
+      setupName = null; atHome = false; save(); track('start'); render(); break;
     }
     case 'resume': atHome = false; render(); break;
     case 'exit-home': save(); atHome = true; render(); window.scrollTo(0, 0); break;
@@ -1826,6 +1856,7 @@ function openTeacherLogin() {
 window.addEventListener('hashchange', teacherFromHash);
 render();
 teacherFromHash();
+track('visit');
 </script>
 </body>
 </html>
