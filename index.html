@@ -122,6 +122,7 @@ h3{font-size:18px;font-weight:700}
 .testbar{position:sticky;top:0;z-index:5;background:var(--surface);border-bottom:1px solid var(--line)}
 .testbar .in{max-width:1180px;margin:0 auto;padding:10px 16px;display:flex;align-items:center;gap:14px;flex-wrap:wrap}
 .testbar .title{font-weight:800}
+.testbar .title .short,.navbar .btn .lbl-s{display:none}
 .timer{margin-inline-start:auto;font-variant-numeric:tabular-nums;font-weight:800;font-size:20px;padding:4px 14px;border-radius:999px;background:var(--surface-2);border:1px solid var(--line)}
 .timer.low{background:var(--bad-bg);border-color:var(--bad-line);color:var(--bad-ink)}
 .timer.free{font-size:15px;font-weight:600;color:var(--ink-2)}
@@ -365,6 +366,9 @@ details.jr[open]>summary{margin-bottom:10px}
   .testbar .btn.small{padding:4px 10px;font-size:13px}
   .timer{font-size:16px;padding:2px 10px}
   .navbar .btn .lbl{display:none}
+  .navbar .btn .lbl-s{display:inline}
+  .testbar .title .long{display:none}
+  .testbar .title .short{display:inline}
   .pane-toggle{display:flex}
   .qwrap.has-passage.show-q .passage{display:none}
   .qwrap.has-passage.show-p .qcard{display:none}
@@ -436,7 +440,8 @@ const CONFIG = {
     url: 'https://docs.google.com/forms/d/e/1FAIpQLScuFQVT38QfxcK7o1diBXV3meJvBAJAoJFlw9DSOlAKMBEvCA/formResponse',
     fields: {name: 338451258, phone: 454271998, email: 929502395, results: 211868837, code: 629827510},
   },
-  teacherPin: '2468',              // קוד כניסה לדוח המורה
+  // קוד כניסה לדוח המורה: נשמר רק ה-SHA-256 שלו, כדי שלא יופיע בקוד. להחלפה: python -c "import hashlib;print(hashlib.sha256(b'NEW').hexdigest())"
+  teacherPinHash: 'cf038699c69d6031bf367c64c87c70dac42e6aaa9735630adeebbd0520b8ad67',
   minutes: {verbal: 23, quant: 23, english: 23, essay: 30}, // זמן לפרק במצב "עם זמן"
   realMinutes: 20,                 // זמן פרק בבחינה האמיתית (לחישוב "ציון בתנאי אמת")
   essayRealMinutes: 30,
@@ -489,7 +494,11 @@ function interp(points, x) {
   }
   return points[points.length - 1][1];
 }
-const waLink = text => 'https://wa.me/' + CONFIG.teacherPhone + '?text=' + encodeURIComponent(text);
+async function sha256Hex(s) {
+  try { const b = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(s)); return [...new Uint8Array(b)].map(x => x.toString(16).padStart(2, '0')).join(''); }
+  catch (e) { return ''; }
+}
+const waLink = text =>'https://wa.me/' + CONFIG.teacherPhone + '?text=' + encodeURIComponent(text);
 const telLink = () => 'tel:+' + CONFIG.teacherPhone;
 const tiktokLink = () => 'https://www.tiktok.com/@' + CONFIG.tiktok;
 const mailLink = (subj = 'מבחן האבחון') => 'mailto:' + CONFIG.email + '?subject=' + encodeURIComponent(subj);
@@ -783,7 +792,7 @@ function estimateEssay(text, prompt) {
   l -= Math.min(2, informal * .75);
   let language = 1 + l * 5 / 7;
   // חיבור קצר אינו מפותח מספיק: תקרה לפי אורך
-  const cap = W < 60 ? 1 : W < 120 ? 3 : W < 180 ? 4 : W < 250 ? 5 : 6;
+  const cap = W < 60 ? 1 : W < 120 ? 2 : W < 180 ? 3 : W < 250 ? 4 : W < 300 ? 5 : 6;
   if (keys < 2 && W >= 60) content = Math.min(content, 2.4); // כנראה לא עונה על הנושא
   content = Math.round(clamp(Math.min(content, cap), 1, 6));
   language = Math.round(clamp(Math.min(language, cap), 1, 6));
@@ -994,7 +1003,7 @@ function renderQuestion() {
   const choices = q.choices.map((c, i) => `<button class="choice ${chosen === i + 1 ? 'sel' : ''}" aria-pressed="${chosen === i + 1}" data-act="choose" data-v="${i + 1}"><span class="n">(${i + 1})</span><span>${c}</span></button>`).join('');
   const nums = s.questions.map((qq, i) => `<button class="qn ${S.ans[qq.id] ? 'done' : ''} ${i === S.qi ? 'cur' : ''} ${S.marks[qq.id] ? 'mark' : ''}" data-act="go" data-v="${i}" aria-label="שאלה ${i + 1}">${i + 1}</button>`).join('');
   return `<div class="testbar"><div class="in">
-      <span class="title"><span class="dot" style="background:${COLORS[k]}"></span>${s.name}</span>
+      <span class="title"><span class="dot" style="background:${COLORS[k]}"></span><span class="long">${s.name}</span><span class="short">${s.short}</span></span>
       <span class="sub">שאלה ${S.qi + 1} מתוך ${n}</span>
       ${k === 'quant' ? '<button class="btn small" data-act="formulas">נוסחאות</button>' : ''}
       <span id="timer" role="timer" class="timer ${S.mode === 'timed' ? '' : 'free'}"></span>
@@ -1016,7 +1025,7 @@ function renderQuestion() {
     </div>
     <div class="navbar"><div class="in">
       <button class="btn small" data-act="prev" ${S.qi === 0 ? 'disabled' : ''}>→<span class="lbl"> הקודמת</span></button>
-      <button class="btn small" data-act="mark" aria-label="${S.marks[q.id] ? 'ביטול סימון' : 'סימון לבדיקה'}">🔖<span class="lbl"> ${S.marks[q.id] ? 'בטל סימון' : 'סמן לבדיקה'}</span></button>
+      <button class="btn small" data-act="mark" aria-label="${S.marks[q.id] ? 'ביטול סימון' : 'סימון לבדיקה'}">🔖<span class="lbl"> ${S.marks[q.id] ? 'בטל סימון' : 'סמן לבדיקה'}</span><span class="lbl-s"> ${S.marks[q.id] ? 'בטל' : 'סמן'}</span></button>
       <div class="qnums">${nums}</div>
       ${S.qi < n - 1 ? '<button class="btn small primary" data-act="next">הבאה ←</button>' : ''}
       <button class="btn small" data-act="finish">סיום<span class="lbl"> הפרק</span></button>
@@ -1738,10 +1747,10 @@ document.addEventListener('click', async ev => {
     case 'a11y-t': A11Y[v] = !A11Y[v]; applyA11y(); renderA11yPanel(); break;
     case 'a11y-reset': A11Y = {f: 0}; applyA11y(); renderA11yPanel(); break;
     case 'teacher-login':
-      modal(`<h2>כניסת מורה</h2><div class="field"><label for="pin">קוד</label><input id="pin" type="password" inputmode="numeric"></div><div class="row" style="margin-top:14px"><button class="btn primary" data-act="pin-ok">כניסה</button><button class="btn" data-act="close">ביטול</button></div>`);
+      modal(`<h2>כניסת מורה</h2><div class="field"><label for="pin">קוד</label><input id="pin" type="password" autocomplete="off" autocapitalize="off" spellcheck="false"></div><div class="row" style="margin-top:14px"><button class="btn primary" data-act="pin-ok">כניסה</button><button class="btn" data-act="close">ביטול</button></div>`);
       setTimeout(() => $('#pin')?.focus(), 50); break;
     case 'pin-ok':
-      if ($('#pin').value === CONFIG.teacherPin) {
+      if (await sha256Hex($('#pin').value.trim()) === CONFIG.teacherPinHash) {
         closeModal(); view.teacher = true;
         view.record = S && S.stage === 'done' ? withTeacherData(lsGet(HIST, []).find(x => x.id === S.id) || buildRecord()) : null;
         view.tab = 'teacher'; render();
@@ -1811,7 +1820,7 @@ function teacherFromHash() {
   if (location.hash === '#teacher' && !view.teacher) openTeacherLogin();
 }
 function openTeacherLogin() {
-  modal(`<h2>כניסת מורה</h2><div class="field"><label for="pin">קוד</label><input id="pin" type="password" inputmode="numeric"></div><div class="row" style="margin-top:14px"><button class="btn primary" data-act="pin-ok">כניסה</button><button class="btn" data-act="close">ביטול</button></div>`);
+  modal(`<h2>כניסת מורה</h2><div class="field"><label for="pin">קוד</label><input id="pin" type="password" autocomplete="off" autocapitalize="off" spellcheck="false"></div><div class="row" style="margin-top:14px"><button class="btn primary" data-act="pin-ok">כניסה</button><button class="btn" data-act="close">ביטול</button></div>`);
 }
 window.addEventListener('hashchange', teacherFromHash);
 render();
