@@ -235,6 +235,7 @@ details.qd .body .stem{font-size:16px}
 .kv{display:grid;grid-template-columns:auto 1fr;gap:4px 14px;font-size:15px}
 .kv dt{color:var(--ink-2)} .kv dd{margin:0;font-weight:700}
 .essay-text{white-space:pre-wrap;background:var(--surface-2);border:1px solid var(--line);border-radius:10px;padding:14px;font-size:16px;line-height:1.8;max-height:420px;overflow:auto}
+.inapp{margin-top:14px;border-color:var(--quant)}.inapp p{margin:0 0 10px;line-height:1.6}
 .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--chip);color:var(--chip-ink);padding:10px 18px;border-radius:999px;z-index:99;font-weight:700}
 .hide{display:none!important}
 /* ── brand & contact ── */
@@ -450,7 +451,10 @@ const CONFIG = {
     fields: {name: 338451258, phone: 454271998, email: 929502395, results: 211868837, code: 629827510},
   },
   // ספירה אנונימית (בלי שם, תשובות או מזהה) ל-Google Form "ספירת מבקרים באבחון": הסיכום בלשונית "תגובות" בטופס
-  statsForm: {url: 'https://docs.google.com/forms/d/e/1FAIpQLSc8N6M92-OUfN0L-QYKY14gxz8zNJ7-7FoM0aeNhvPi8ZCkpg/formResponse', field: 199736074},
+  // srcField: מזהה שדה "מקור" (תשובה קצרה) בטופס, אם הוסף. null = לא נשלח מקור
+  statsForm: {url: 'https://docs.google.com/forms/d/e/1FAIpQLSc8N6M92-OUfN0L-QYKY14gxz8zNJ7-7FoM0aeNhvPi8ZCkpg/formResponse', field: 199736074, srcField: null},
+  // מזהה TikTok Pixel (מ-TikTok Ads Manager ← Events). נטען רק למי שהגיע מפרסומת (ttclid או utm_medium=paid). ריק = כבוי
+  tiktokPixel: '',
   // קוד כניסה לדוח המורה: נשמר רק ה-SHA-256 שלו, כדי שלא יופיע בקוד. להחלפה: python -c "import hashlib;print(hashlib.sha256(b'NEW').hexdigest())"
   teacherPinHash: 'cf038699c69d6031bf367c64c87c70dac42e6aaa9735630adeebbd0520b8ad67',
   minutes: {verbal: 23, quant: 23, english: 23, essay: 30}, // זמן לפרק במצב "עם זמן"
@@ -506,13 +510,45 @@ function interp(points, x) {
   return points[points.length - 1][1];
 }
 // ספירה אנונימית: רק שם האירוע נשלח. לא נספר בבדיקות מקומיות ולא בכניסת מורה
-const TRACK = {visit: 'כניסה', start: 'התחלת מבחן', finish: 'סיום מבחן', lead: 'השאיר פרטים'};
+const TRACK = {visit: 'כניסה', start: 'התחלת מבחן', phase0: 'סיום פרק 1', phase1: 'סיום פרק 2', phase2: 'סיום פרק 3', finish: 'סיום מבחן', lead: 'השאיר פרטים', wa: 'לחיצה על וואטסאפ'};
+// אירועי TikTok Pixel (אירועים סטנדרטיים, לאופטימיזציה של הקמפיין)
+const PIXEL_EV = {start: 'ClickButton', finish: 'CompleteRegistration', lead: 'SubmitForm', wa: 'Contact'};
+// דפדפן פנימי של אפליקציה (טיקטוק, אינסטגרם, פייסבוק)
+const INAPP = /musical_ly|Bytedance|TikTok|Instagram|FBAN|FBAV/i.test(navigator.userAgent);
+// מקור הכניסה: utm_source/utm_medium מהקישור, או ttclid (טיקטוק מוסיף אותו לכל לחיצה על מודעה). נזכר במכשיר, כדי שגם המשך המבחן ייספר לאותו מקור
+const SRC = (() => {
+  const p = new URLSearchParams(location.search);
+  let s = p.get('utm_source') ? p.get('utm_source') + (p.get('utm_medium') ? '/' + p.get('utm_medium') : '') : p.has('ttclid') ? 'tiktok/paid' : '';
+  s = s.toLowerCase().replace(/[^a-z0-9_\/-]/g, '').slice(0, 40);
+  try { if (s) localStorage.setItem('psy_src', s); else s = localStorage.getItem('psy_src') || ''; } catch (e) {}
+  if (/[?&]utm_/.test(location.search)) try { history.replaceState(null, '', location.pathname + location.hash); } catch (e) {} // שלא יועבר הלאה בשיתוף
+  return s;
+})();
+const PAID = /\/(paid|cpc|ads?)$/.test(SRC);
+const LIVE = () => /^https?:$/.test(location.protocol) && !/^(localhost|127\.)/.test(location.hostname) && !(typeof view !== 'undefined' && view.teacher);
+if (CONFIG.tiktokPixel && PAID && LIVE()) {
+  !function (w, d, t) {
+    w.TiktokAnalyticsObject = t; var ttq = w[t] = w[t] || []; ttq.methods = ['page', 'track', 'identify', 'instances', 'debug', 'on', 'off', 'once', 'ready', 'alias', 'group', 'enableCookie', 'disableCookie', 'holdConsent', 'revokeConsent', 'grantConsent'];
+    ttq.setAndDefer = function (t, e) { t[e] = function () { t.push([e].concat(Array.prototype.slice.call(arguments, 0))); }; };
+    for (var i = 0; i < ttq.methods.length; i++) ttq.setAndDefer(ttq, ttq.methods[i]);
+    ttq.instance = function (t) { for (var e = ttq._i[t] || [], n = 0; n < ttq.methods.length; n++) ttq.setAndDefer(e, ttq.methods[n]); return e; };
+    ttq.load = function (e, n) { var r = 'https://analytics.tiktok.com/i18n/pixel/events.js'; ttq._i = ttq._i || {}, ttq._i[e] = [], ttq._i[e]._u = r, ttq._t = ttq._t || {}, ttq._t[e] = +new Date, ttq._o = ttq._o || {}, ttq._o[e] = n || {};
+      n = d.createElement('script'); n.type = 'text/javascript', n.async = !0, n.src = r + '?sdkid=' + e + '&lib=' + t; e = d.getElementsByTagName('script')[0]; e.parentNode.insertBefore(n, e); };
+    ttq.load(CONFIG.tiktokPixel); ttq.page();
+  }(window, document, 'ttq');
+}
 function track(ev) {
   const F = CONFIG.statsForm;
-  if (!F || !F.url || !/^https?:$/.test(location.protocol) || /^(localhost|127\.)/.test(location.hostname) || (typeof view !== 'undefined' && view.teacher)) return;
+  if (!LIVE()) return;
   if (ev === 'visit') { try { if (sessionStorage.getItem('psy_v')) return; sessionStorage.setItem('psy_v', '1'); } catch (e) {} }
-  try { fetch(F.url, {method: 'POST', mode: 'no-cors', body: new URLSearchParams({['entry.' + F.field]: TRACK[ev]})}).catch(() => {}); } catch (e) {}
+  try { if (window.ttq && PIXEL_EV[ev]) window.ttq.track(PIXEL_EV[ev]); } catch (e) {}
+  if (!F || !F.url) return;
+  const body = new URLSearchParams({['entry.' + F.field]: TRACK[ev]});
+  if (F.srcField) body.set('entry.' + F.srcField, SRC || 'ישיר');
+  try { fetch(F.url, {method: 'POST', mode: 'no-cors', body}).catch(() => {}); } catch (e) {}
 }
+// בדפדפן פנימי חלון חדש נחסם לפעמים, אז פותחים באותו חלון (ההתקדמות שמורה)
+function openExt(url) { if (INAPP) location.href = url; else window.open(url, '_blank', 'noopener'); }
 async function sha256Hex(s) {
   try { const b = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(s)); return [...new Uint8Array(b)].map(x => x.toString(16).padStart(2, '0')).join(''); }
   catch (e) { return ''; }
@@ -592,7 +628,7 @@ function pathStrip() {
 }
 /* ───────────────────────── מסמכים, יצירת קשר, נגישות ─────────────────────────
    תבניות שנכתבו למבחן הזה. מומלץ שעורך/ת דין יעבור/תעבור עליהן לפני הפצה רחבה. */
-const LEGAL_UPDATED = '22.10.2026';
+const LEGAL_UPDATED = '25.10.2026';
 function legalDoc(kind) {
   const T = CONFIG.teacherFullName, ph = esc(CONFIG.phoneDisplay), em = esc(CONFIG.email);
   const docs = {
@@ -608,7 +644,7 @@ function legalDoc(kind) {
       <h3>דין וסמכות</h3><p>על התנאים חל הדין הישראלי. לשאלות: ${ph} · ${em}</p>`,
     privacy: `<h2>מדיניות פרטיות</h2><p class="muted">עודכן: ${LEGAL_UPDATED}</p>
       <h3>איזה מידע נאסף</h3><ul><li>שם פרטי (או כינוי), וציון יעד (רשות)</li><li>התשובות, הזמן לכל שאלה והחיבור (אם נכתב)</li><li>אם בחרת בכך: הסכמה לקבל ממני עדכונים</li>${CONFIG.leadForm.url ? '<li>אם השארת בטופס "רוצה שאחזור אליך?": מספר טלפון, ואימייל אם הוספת</li>' : ''}</ul>
-      <p>לא נאספים מספר תעודת זהות, כתובת, פרטי תשלום או מידע רפואי. אין במבחן עוגיות (Cookies), פרסום או כלי מעקב של צד שלישי. נספרת רק ספירה אנונימית של כניסות, התחלות וסיומים (דרך Google Forms), בלי שם, בלי תשובות ובלי שום פרט מזהה.</p>
+      <p>לא נאספים מספר תעודת זהות, כתובת, פרטי תשלום או מידע רפואי. ${CONFIG.tiktokPixel ? 'למי שנכנס דרך פרסומת בטיקטוק, נטען כלי המדידה של TikTok (TikTok Pixel). הוא משתמש בעוגיות (Cookies) ומדווח לטיקטוק על פעולות באתר (כניסה, התחלת המבחן, סיום, פנייה והשארת פרטים) כדי למדוד את הפרסום, לפי <a href="https://www.tiktok.com/legal/privacy-policy" target="_blank" rel="noopener">מדיניות הפרטיות של TikTok</a>. השם, התשובות והפרטים שמסרת לא נשלחים אליו. מלבד זה' : 'אין במבחן עוגיות (Cookies), פרסום או כלי מעקב של צד שלישי.'} נספרת ספירה אנונימית של כניסות, התחלות, סיום פרקים, סיומים ופניות (דרך Google Forms), יחד עם המקור שממנו הגעת (למשל פרסומת בטיקטוק), בלי שם, בלי תשובות ובלי שום פרט מזהה.</p>
       <p>אין חובה חוקית למסור את המידע. בלי שם לא ניתן להתחיל את המבחן, ואפשר להשתמש בכינוי. האתר מאוחסן ב-GitHub Pages, שעשוי לתעד כתובות IP ונתוני גלישה טכניים לצורכי אבטחה, לפי מדיניות הפרטיות של GitHub.</p>
       <h3>איפה המידע נשמר</h3><p>המידע נשמר <b>במכשיר שלך</b> (בזיכרון הדפדפן), כדי שתוכל/י להמשיך מאותה נקודה ולראות את הדוח. הוא לא נשלח לשום שרת${CONFIG.leadForm.url ? ', אלא אם בחרת לשלוח אותו כמתואר למטה' : ''}.</p>
       <h3>מתי המידע מגיע אליי</h3><p>רק אם <b>את/ה בוחר/ת לשלוח</b> אותו: בלחיצה על "שליחה לווטסאפ", בהעתקת קוד התוצאות או בהורדת קובץ${CONFIG.leadForm.url ? ', או בהשארת פרטים בטופס "רוצה שאחזור אליך?". במקרה כזה הפרטים והתוצאות נשלחים דרך Google Forms ונשמרים בגיליון פרטי שלי ב-Google, שרק לי יש אליו גישה' : ''}. ההודעה עוברת דרך ווטסאפ או השירות שבחרת, וכפופה גם למדיניות שלו. קוד התוצאות כולל את התשובות, הזמנים וטקסט החיבור (אם נכתב).</p>
@@ -927,7 +963,10 @@ function renderHome() {
   const resume = inProgress ? `<div class="card resume stack"><h3>יש לך מבחן שמור</h3>
       <p class="sub">${esc(S.name)}, עצרת ב${S.phases[S.p] === 'essay' ? 'מטלת הכתיבה' : SEC[S.phases[S.p]].the}. אפשר להמשיך בדיוק מאותה נקודה.</p>
       <div class="row"><button class="btn primary" data-act="resume">להמשיך את המבחן ←</button><button class="btn" data-act="restart">להתחיל מחדש</button></div></div>` : '';
-  return `${brandBar()}<div class="wrap">
+  let inappOk = true; try { inappOk = !!localStorage.getItem('psy_inapp_ok'); } catch (e) {}
+  const inapp = INAPP && !inappOk && SITE_LINK ? `<div class="card inapp" role="note"><p><b>פתחתם מתוך אפליקציה?</b> המבחן ארוך, וכדי שההתקדמות תישמר בוודאות עדיף לפתוח אותו בדפדפן: <b>⋯</b> בפינה ← "פתיחה בדפדפן". אפשר גם להמשיך כאן.</p>
+      <div class="row"><button class="btn small" data-act="inapp-copy">העתקת הקישור</button><button class="btn small" data-act="inapp-ok">הבנתי, ממשיכים כאן</button></div></div>` : '';
+  return `${brandBar()}<div class="wrap">${inapp}
   <section class="hero">
     <div class="hi grad" aria-live="off">${HELLOS[0]}</div>
     <h1>כ-${total} דקות, ותדעו מה הציון שלכם בפסיכומטרי ואיפה הכי קל להעלות אותו.</h1>
@@ -1119,7 +1158,7 @@ function askFinish() {
 
 function finishPhase() {
   closeModal();
-  if (S.p < S.phases.length - 1) { S.p++; S.qi = 0; S.stage = 'intro'; save(); stopTicker(); render(); return; }
+  if (S.p < S.phases.length - 1) { track('phase' + S.p); S.p++; S.qi = 0; S.stage = 'intro'; save(); stopTicker(); render(); return; }
   S.stage = 'done'; S.finished = new Date().toISOString(); save(); stopTicker();
   const r = buildRecord(); const h = lsGet(HIST, []).filter(x => x.id !== r.id); h.unshift(r); lsSet(HIST, h.slice(0, 50)); track('finish');
   view.tab = 'student'; render();
@@ -1797,7 +1836,9 @@ document.addEventListener('click', async ev => {
       $('#start-form')?.scrollIntoView({behavior: 'smooth', block: 'start'}); setTimeout(() => $('#name')?.focus({preventScroll: true}), 450); break;
     case 'tst': modal(`<img class="tst-big" src="${CONFIG.testimonials[+v]}" alt="המלצה ${+v + 1}"><div class="row" style="margin-top:14px;justify-content:center"><button class="btn primary" data-act="close">סגירה</button></div>`); break;
     case 'contact': contactModal(); break;
-    case 'c-wa': { const t = contactText(); if (t) window.open(waLink(t), '_blank', 'noopener'); break; }
+    case 'inapp-ok': try { localStorage.setItem('psy_inapp_ok', '1'); } catch (e) {} render(); break;
+    case 'inapp-copy': try { await navigator.clipboard.writeText(SITE_LINK); toast('הקישור הועתק. הדביקו אותו בכרום או בספארי'); } catch (e) { modal(`<h3>העתיקו את הקישור</h3><input value="${esc(SITE_LINK)}" dir="ltr" readonly onfocus="this.select()"><div class="row" style="margin-top:12px"><button class="btn" data-act="close">סגירה</button></div>`); } break;
+    case 'c-wa': { const t = contactText(); if (t) openExt(waLink(t)); break; }
     case 'c-mail': { const t = contactText(); if (t) location.href = mailLink('פנייה מהמבחן') + '&body=' + encodeURIComponent(t); break; }
     case 'wipe':
       if (confirm('למחוק מהמכשיר את כל נתוני המבחן והדוחות?')) { try { [STORE, HIST, TNOTES, 'psy_a11y'].forEach(k => localStorage.removeItem(k)); } catch (e) {} S = null; A11Y = {f: 0}; applyA11y(); closeModal(); render(); toast('הנתונים נמחקו מהמכשיר'); }
@@ -1832,7 +1873,7 @@ document.addEventListener('click', async ev => {
       const {r, an} = CURRENT;
       if (act === 'send-wa' && CURRENT.code) break; // הקישור עצמו פותח את הווטסאפ
       const code = CURRENT.code || await encodeRecord(r);
-      if (act === 'send-wa') window.open(waLink(summaryText(r, an, code)), '_blank', 'noopener');
+      if (act === 'send-wa') openExt(waLink(summaryText(r, an, code)));
       else if (act === 'copy-code') { try { await navigator.clipboard.writeText(summaryText(r, an, code)); toast('הועתק. אפשר להדביק בכל צ׳אט'); } catch (e) { modal(`<h3>העתיקו את הקוד</h3><textarea class="essay-box" style="min-height:160px;direction:ltr;font-size:13px">${esc(code)}</textarea><div class="row"><button class="btn" data-act="close">סגירה</button></div>`); } }
       else { const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([summaryText(r, an, code)], {type: 'text/plain'})); a.download = 'אבחון_' + (r.name || 'תלמיד').replace(/\s+/g, '_') + '.txt'; a.click(); }
       break;
@@ -1875,6 +1916,12 @@ document.addEventListener('keydown', ev => {
   else if (ev.key === 'ArrowRight') { S.qi = Math.max(0, S.qi - 1); save(); render(); }
 });
 document.addEventListener('visibilitychange', () => save());
+window.addEventListener('pagehide', () => save()); // סגירת הדפדפן הפנימי לא תמיד מפעילה visibilitychange
+// ספירת פניות בווטסאפ (כל קישור או כפתור שפותח צ׳אט איתי)
+document.addEventListener('click', ev => {
+  const a = ev.target.closest('a[href*="wa.me/' + CONFIG.teacherPhone + '"], [data-act="send-wa"], [data-act="c-wa"]');
+  if (a && !view.demo) track('wa');
+}, true);
 
 function teacherFromHash() {
   if (location.hash === '#teacher' && !view.teacher) openTeacherLogin();
