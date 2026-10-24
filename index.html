@@ -136,6 +136,10 @@ h3{font-size:18px;font-weight:700}
 .passage .pn{font-weight:700;color:var(--muted);margin-inline-end:4px}
 .passage-title{font-weight:800;margin-bottom:10px}
 .passage.en,.en{direction:ltr;text-align:left}
+.guess-btn{margin-top:14px;border:1.5px dashed var(--line-2);background:transparent;color:var(--muted);border-radius:999px;padding:7px 14px;font-size:15px;font-weight:600;cursor:pointer}
+.guess-btn.on{border-style:solid;border-color:var(--trap);background:color-mix(in srgb,var(--trap) 16%,transparent);color:var(--ink)}
+.qcell.g{position:relative}.qcell.g::before{content:"?";position:absolute;top:-5px;right:-5px;width:14px;height:14px;border-radius:50%;background:var(--chip);color:var(--chip-ink);font-size:9px;font-weight:800;display:flex;align-items:center;justify-content:center;border:1.5px solid var(--surface)}
+.sw.gq{display:inline-flex;align-items:center;justify-content:center;background:var(--chip);color:var(--chip-ink);font-size:9px;font-weight:800;font-style:normal;border-radius:50%}
 .qcard{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:24px;box-shadow:var(--shadow)}
 .qmeta{display:flex;gap:8px;align-items:center;margin-bottom:12px;color:var(--muted);font-size:14px}
 .instr{font-size:15px;color:var(--ink-2);margin-bottom:12px}
@@ -238,6 +242,12 @@ details.qd .body .stem{font-size:16px}
 .eo{display:grid;gap:18px;padding-top:18px;padding-bottom:28px;max-width:860px}.eo h1{font-size:clamp(26px,6vw,36px);margin:0}
 .eo-get,.eo-steps{margin:0;padding-inline-start:22px;line-height:1.9}.eo-steps li{margin-bottom:8px}
 .eo-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}@media(max-width:640px){.eo-grid{grid-template-columns:1fr}}
+.eo [hidden]{display:none!important}
+.eo-fs{border:1px solid var(--line);border-radius:12px;padding:12px 14px 14px;margin:0;display:grid;gap:10px;min-width:0}.eo-fs legend{font-weight:700;padding:0 6px}
+.eo-modes{display:flex;flex-wrap:wrap;gap:8px}.eo-mode{position:relative;cursor:pointer}.eo-mode input{position:absolute;opacity:0;inset:0;margin:0;cursor:pointer}
+.eo-mode span{display:inline-block;padding:7px 14px;border:1px solid var(--line-2);border-radius:999px;font-weight:600;font-size:15px}
+.eo-mode input:checked+span{background:var(--accent-soft);border-color:var(--accent);color:var(--accent)}.eo-mode input:focus-visible+span{outline:2px solid var(--accent);outline-offset:2px}
+.eo-pane{display:grid;gap:6px}.eo input[type=file]{max-width:100%}
 .eo-promo{display:block;color:inherit;text-decoration:none;border-color:var(--accent)}.eo-promo h3{margin:10px 0 6px}.eo-more{font-weight:700;color:var(--accent)}
 .inapp{margin-top:14px;border-color:var(--quant)}.inapp p{margin:0 0 10px;line-height:1.6}
 .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--chip);color:var(--chip-ink);padding:10px 18px;border-radius:999px;z-index:99;font-weight:700}
@@ -441,12 +451,12 @@ const CONFIG = {
     },
     consultTitle: '🎁 שיחת ייעוץ במתנה (ללא עלות וללא התחייבות)',
     consult: [
-      'רוצה להבין בדיוק מה התוצאות שלך אומרות ואיך להתחיל לעבוד? אני מזמין אותך לשיחת ייעוץ ואבחון של חצי שעה איתי – בחינם לגמרי.',
+      'רוצה להבין בדיוק מה התוצאות שלך אומרות ואיך להתחיל לעבוד? אני מזמין אותך לשיחת ייעוץ ואבחון של רבע שעה איתי – בחינם לגמרי.',
       'בשיחה נעבור יחד על הציון והסימולציה שלך, נמפה את נקודות התורפה, ונבנה מפת דרכים ברורה שתראה לך בדיוק מה יידרש ממך כדי להגיע ליעד.',
       'ואם יהיה מתאים להמשיך יחד, נדבר גם על מסגרת הליווי ועל המחיר. בלי לחץ ובלי התחייבות.',
     ],
     // משפט קצר על הליווי (דף הבית, ליד יצירת קשר). אפשר להוסיף כאן פורמט/מחיר כשתרצה.
-    howItWorks: 'בשיחת הייעוץ (חינם, חצי שעה) נעבור על התוצאות, ונדבר גם על מסגרת הליווי ועל המחיר.',
+    howItWorks: 'בשיחת הייעוץ (חינם, רבע שעה) נעבור על התוצאות, ונדבר גם על מסגרת הליווי ועל המחיר.',
   },
   // הטופס "רוצה שאחזור אליך?" שולח ל-Google Form "פניות מהאבחון" (התגובות בגיליון "פניות מהאבחון - תגובות", ומייל על כל תגובה).
   // url ריק = הטופס לא מוצג באתר. המספרים הם מזהי השדות בטופס (entry.XXX).
@@ -456,7 +466,8 @@ const CONFIG = {
   },
   // ספירה אנונימית (בלי שם, תשובות או מזהה) ל-Google Form "ספירת מבקרים באבחון": הסיכום בלשונית "תגובות" בטופס
   // בדיקת חיבור בתשלום (עמוד #essay): התשלום מראש בביט למספר של המורה, והחיבור נשלח לטופס "פניות מהאבחון" (מסומן "📝 בדיקת חיבור")
-  essayService: {price: 49, days: 3},
+  // uploadUrl: כתובת ה-Web App של src/essay_upload.gs (שומר קבצים ב-Drive). ריק = אין אפשרות לצרף קובץ או תמונה
+  essayService: {price: 49, days: 3, uploadUrl: ''},
   // srcField: מזהה שדה "מקור" (תשובה קצרה) בטופס, אם הוסף. null = לא נשלח מקור
   statsForm: {url: 'https://docs.google.com/forms/d/e/1FAIpQLSc8N6M92-OUfN0L-QYKY14gxz8zNJ7-7FoM0aeNhvPi8ZCkpg/formResponse', field: 199736074, srcField: null},
   // מזהה TikTok Pixel (מ-TikTok Ads Manager ← Events). נטען רק למי שהגיע מפרסומת (ttclid או utm_medium=paid). ריק = כבוי
@@ -643,14 +654,21 @@ function legalDoc(kind) {
       <h3>אין קשר למרכז הארצי לבחינות ולהערכה</h3><p>המבחן אינו של המרכז הארצי לבחינות ולהערכה (מאל"ו), אינו מאושר על ידו ואינו קשור אליו. השאלות הן שאלות תרגול שנכתבו בסגנון הבחינה.</p>
       <h3>הציונים הם הערכה בלבד</h3><p>הציונים, הפוטנציאל, הערכת החיבור וההמלצות מבוססים על פרק אחד מכל תחום ועל נוסחת המרה משוערת. הם נועדו לתת תמונת מצב כללית, ואינם מנבאים ואינם מבטיחים ציון בבחינה האמיתית. אין להסתמך עליהם לצורך החלטות מהותיות (כמו הרשמה ללימודים) בלי בדיקה נוספת.</p>
       <h3>אין התחייבות לתוצאה</h3><p>שיחת הייעוץ והליווי אינם מבטיחים שיפור בציון או השגת ציון יעד. התוצאה תלויה גם בעבודה ובהתמדה של כל תלמיד/ה.</p>
-      <h3>בדיקת חיבור בתשלום</h3><p>בדיקת חיבור אישית עולה ${CONFIG.essayService.price} ₪, והתשלום הוא מראש בביט. אחרי שאראה את ההעברה, המשוב יישלח לאימייל שמסרת תוך ${CONFIG.essayService.days} ימי עסקים. אם לא אמצא את ההעברה, אפנה אליך בטלפון שמסרת. אפשר לבטל ולקבל החזר מלא כל עוד לא התחלתי לבדוק, בפנייה ל-${ph}. הציון בבדיקה הוא הערכה מקצועית שלי, ולא ציון רשמי של הבחינה.</p>
+      <h3>בדיקת חיבור בתשלום</h3>
+      <p><b>השירות.</b> בדיקה אישית של חיבור אחד ומשוב כתוב: ציון משוער, הערות ונקודות לשיפור. המשוב הוא חוות דעת מקצועית שלי. הוא אינו ציון רשמי, אינו מנבא את הציון בבחינה ואינו מבטיח שיפור או ציון מסוים.</p>
+      <p><b>תשלום.</b> המחיר הוא ${CONFIG.essayService.price} ₪ לחיבור, והתשלום הוא מראש בביט. הבדיקה מתחילה רק אחרי שההעברה התקבלה אצלי. אם לא אמצא העברה, אפנה אליך בטלפון שמסרת. אם התשלום לא יושלם תוך 7 ימים, הבקשה תבוטל והחומר יימחק.</p>
+      <p><b>זמן.</b> המשוב יישלח בדרך שבחרת (ווטסאפ ו/או מייל) תוך ${CONFIG.essayService.days} ימי עסקים מקבלת התשלום ומקבלת חומר תקין. במקרים חריגים (מחלה, חגים, תקלה) ייתכן עיכוב, ואעדכן אותך. אם העיכוב עולה על 7 ימי עסקים, אפשר לבקש החזר מלא.</p>
+      <p><b>ביטול והחזר.</b> אפשר לבטל ולקבל החזר מלא כל עוד לא התחלתי לבדוק, בפנייה ל-${ph}. אחרי שהמשוב נשלח, השירות ניתן במלואו. כל זה בכפוף לחוק הגנת הצרכן.</p>
+      <p><b>החומר ששלחת.</b> החיבור נשאר שלך. בשליחה את/ה מצהיר/ה שכתבת אותו בעצמך ושמותר לך לשלוח אותו, ושאין בו תוכן פוגעני, בלתי חוקי או פרטים אישיים של אחרים. אני משתמש בו רק לצורך הבדיקה, ולא אפרסם אותו בלי הסכמתך. אני רשאי לסרב לבדוק חומר שאינו חיבור או שמפר את התנאים, ואז הכסף יוחזר.</p>
+      <p><b>קבצים וקישורים.</b> האחריות לכך שהקובץ נפתח, שהכתב קריא ושהקישור משותף לצפייה היא של השולח. אם לא אצליח לפתוח את החומר אפנה אליך, והזמן ייספר מהרגע שקיבלתי חומר תקין.</p>
+      <p><b>הגבלת אחריות.</b> בכל מקרה, האחריות שלי בקשר לבדיקת החיבור מוגבלת לסכום ששולם עבורה. אין לי אחריות להחלטות שהתקבלו על סמך המשוב.</p>
       <h3>קניין רוחני</h3><p>כל הזכויות שמורות למפעיל. השאלות, ההסברים, הדוחות, העיצוב, הקוד וכל תוכן אחר במבחן הם קניינו הרוחני של המפעיל. מותר להשתמש בהם לצורך אישי בלבד, לשם ביצוע המבחן וקריאת הדוח. אין להעתיק, לשכפל, לצלם, להפיץ, לפרסם, למכור, לתרגם או לעשות כל שימוש מסחרי בתוכן, כולו או חלקו, ללא אישור מראש ובכתב מהמפעיל.</p>
       <h3>קטינים</h3><p>אם גילך מתחת ל-18, מומלץ להשתמש במבחן ולפנות לשיחת ייעוץ בידיעת הורה או אפוטרופוס. אישור לקבלת עדכונים והצעות ניתן רק מגיל 18, או בהסכמת הורה.</p>
       <h3>קישורים חיצוניים</h3><p>בדוח יש קישורים לטיקטוק, לווטסאפ ולשירותים חיצוניים אחרים. השימוש בהם כפוף לתנאים ולמדיניות הפרטיות שלהם.</p>
       <h3>הגבלת אחריות</h3><p>המבחן ניתן כמו שהוא (AS IS). המפעיל עושה מאמץ שהתוכן יהיה נכון ומדויק, אך ייתכנו טעויות, ולא תהיה לו אחריות לנזק שנגרם מהשימוש במבחן או מהסתמכות על תוצאותיו, ככל שהחוק מתיר.</p>
       <h3>דין וסמכות</h3><p>על התנאים חל הדין הישראלי. לשאלות: ${ph} · ${em}</p>`,
     privacy: `<h2>מדיניות פרטיות</h2><p class="muted">עודכן: ${LEGAL_UPDATED}</p>
-      <h3>איזה מידע נאסף</h3><ul><li>שם פרטי (או כינוי), וציון יעד (רשות)</li><li>התשובות, הזמן לכל שאלה והחיבור (אם נכתב)</li><li>אם בחרת בכך: הסכמה לקבל ממני עדכונים</li>${CONFIG.leadForm.url ? '<li>אם השארת בטופס "רוצה שאחזור אליך?": מספר טלפון, ואימייל אם הוספת</li><li>אם שלחת חיבור לבדיקה: שם, אימייל, טלפון, השם בביט (אם מסרת), נושא החיבור והחיבור עצמו. הם נשלחים דרך Google Forms ונשמרים בגיליון פרטי שלי, כדי לבדוק את החיבור ולשלוח לך משוב</li>' : ''}</ul>
+      <h3>איזה מידע נאסף</h3><ul><li>שם פרטי (או כינוי), וציון יעד (רשות)</li><li>התשובות, הזמן לכל שאלה והחיבור (אם נכתב)</li><li>אם בחרת בכך: הסכמה לקבל ממני עדכונים</li>${CONFIG.leadForm.url ? '<li>אם השארת בטופס "רוצה שאחזור אליך?": מספר טלפון, ואימייל אם הוספת</li><li>אם שלחת חיבור לבדיקה: שם, טלפון, אימייל (אם בחרת לקבל משוב במייל), נושא החיבור והחיבור עצמו: טקסט, קישור או קבצים שצירפת. הפרטים נשלחים דרך Google Forms ונשמרים בגיליון פרטי שלי, וקבצים נשמרים ב-Google Drive הפרטי שלי. הם משמשים רק לבדיקת החיבור ולשליחת המשוב</li>' : ''}</ul>
       <p>לא נאספים מספר תעודת זהות, כתובת, פרטי תשלום או מידע רפואי. ${CONFIG.tiktokPixel ? 'למי שנכנס דרך פרסומת בטיקטוק, נטען כלי המדידה של TikTok (TikTok Pixel). הוא משתמש בעוגיות (Cookies) ומדווח לטיקטוק על פעולות באתר (כניסה, התחלת המבחן, סיום, פנייה והשארת פרטים) כדי למדוד את הפרסום, לפי <a href="https://www.tiktok.com/legal/privacy-policy" target="_blank" rel="noopener">מדיניות הפרטיות של TikTok</a>. השם, התשובות והפרטים שמסרת לא נשלחים אליו. מלבד זה' : 'אין במבחן עוגיות (Cookies), פרסום או כלי מעקב של צד שלישי.'} נספרת ספירה אנונימית של כניסות, התחלות, סיום פרקים, סיומים ופניות (דרך Google Forms), יחד עם המקור שממנו הגעת (למשל פרסומת בטיקטוק), בלי שם, בלי תשובות ובלי שום פרט מזהה.</p>
       <p>אין חובה חוקית למסור את המידע. בלי שם לא ניתן להתחיל את המבחן, ואפשר להשתמש בכינוי. האתר מאוחסן ב-GitHub Pages, שעשוי לתעד כתובות IP ונתוני גלישה טכניים לצורכי אבטחה, לפי מדיניות הפרטיות של GitHub.</p>
       <h3>איפה המידע נשמר</h3><p>המידע נשמר <b>במכשיר שלך</b> (בזיכרון הדפדפן), כדי שתוכל/י להמשיך מאותה נקודה ולראות את הדוח. הוא לא נשלח לשום שרת${CONFIG.leadForm.url ? ', אלא אם בחרת לשלוח אותו כמתואר למטה' : ''}.</p>
@@ -891,7 +909,7 @@ function save() { lsSet(STORE, S); }
 function newState(o) {
   return {v: 1, id: 'r' + Date.now().toString(36), name: o.name, target: o.target || '', mode: o.mode, withEssay: o.withEssay, optin: !!o.optin,
           prompt: o.prompt ?? 0, phases: (o.withEssay ? ['essay'] : []).concat(SECS.map(s => s.key)),
-          p: 0, stage: 'intro', qi: 0, ans: {}, t: {}, marks: {}, used: {}, essay: '', date: new Date().toISOString(), timeouts: {}};
+          p: 0, stage: 'intro', qi: 0, ans: {}, t: {}, marks: {}, guess: {}, used: {}, essay: '', date: new Date().toISOString(), timeouts: {}};
 }
 const curKey = () => S.phases[S.p];
 const limitSec = k => CONFIG.minutes[k] * 60;
@@ -1005,7 +1023,7 @@ function renderHome() {
         <h3>מה במבחן</h3>
         ${secRows}
         <div class="secline"><span><span class="dot" style="background:var(--muted)"></span><b>חיבור</b> (רשות)</span><span class="sub">נושא אחד · ${CONFIG.minutes.essay} דק׳</span></div>
-        <p class="muted" style="margin:12px 0 0">אין קנס על טעות, כמו בבחינה: תמיד עדיף לסמן תשובה. אפשר לדלג, לסמן שאלות לבדיקה ולחזור אליהן בתוך אותו פרק.</p>
+        <p class="muted" style="margin:12px 0 0">אין קנס על טעות, כמו בבחינה: תמיד עדיף לסמן תשובה. ואם לא הייתם בטוחים, לחצו <b>"ניחשתי"</b> ליד התשובה: כך הדוח יראה מה באמת ידעתם. אפשר לדלג, לסמן שאלות לבדיקה ולחזור אליהן בתוך אותו פרק.</p>
       </div>
       <div class="card">
         <h3>טיפים לפני שמתחילים</h3>
@@ -1098,6 +1116,7 @@ function renderQuestion() {
             ${q.fig ? `<div class="fig">${q.fig}</div>` : ''}
             <div class="choices">${choices}</div>
           </div>
+          <button class="guess-btn ${S.guess?.[q.id] ? 'on' : ''}" data-act="guess" aria-pressed="${!!S.guess?.[q.id]}">🎲 ${S.guess?.[q.id] ? 'סימנת שניחשת (לחיצה לביטול)' : 'ניחשתי את התשובה'}</button>
         </div>
       </div>
     </div>
@@ -1178,20 +1197,21 @@ function finishPhase() {
 
 // דוח לדוגמה (#demo): תלמיד דמיוני עם תשובות קבועות, לשיווק ולסרטונים. לא שולח כלום ולא נוגע במבחן השמור
 function demoRecord() {
-  const ans = {}, t = {}, used = {};
+  const ans = {}, t = {}, used = {}, guess = {};
   for (const s of SECS) {
     let u = 0;
     s.questions.forEach((q, i) => {
       const wrong = q.level === 3 ? i % 2 === 0 : q.level === 2 ? i % 2 === 1 : i % 5 === 2; // ~588 היום, פוטנציאל ~700, יעד 680
       ans[q.id] = wrong ? ((q.trap && q.trap[0]) || (q.ans % 4) + 1) : q.ans;
+      if (q.level === 3 || i % 7 === 3) guess[q.id] = 1;
       t[q.id] = 30 + q.level * 14 + (i % 3) * 6; u += t[q.id];
     });
     used[s.key] = u;
   }
-  return {v: 1, id: 'demo', name: 'דניאל', target: '680', mode: 'timed', date: new Date().toISOString(), optin: false, ans, t, used, essay: null};
+  return {v: 1, id: 'demo', name: 'דניאל', target: '680', mode: 'timed', date: new Date().toISOString(), optin: false, ans, guess, t, used, essay: null};
 }
 function buildRecord() {
-  return {v: 1, id: S.id, name: S.name, target: S.target, mode: S.mode, date: S.date, optin: !!S.optin, ans: S.ans, t: S.t, used: S.used,
+  return {v: 1, id: S.id, name: S.name, target: S.target, mode: S.mode, date: S.date, optin: !!S.optin, ans: S.ans, guess: S.guess || {}, t: S.t, used: S.used,
           essay: S.withEssay ? {prompt: S.prompt, text: S.essay, secs: S.used.essay || 0, pasted: S.pasted || 0} : null};
 }
 
@@ -1204,7 +1224,7 @@ function analyze(r) {
     const items = qs.map((q, i) => {
       const a = r.ans[q.id] || 0, t = r.t[q.id] || 0;
       const st = !a ? 's' : a === q.ans ? 'c' : (q.trap || []).includes(a) ? 't' : 'w';
-      return {q, i, a, t, st, ok: st === 'c', fast: a && st !== 'c' && t < target * .4, slow: t > target * 2.2};
+      return {q, i, a, t, st, ok: st === 'c', g: !!(a && (r.guess || {})[q.id]), fast: a && st !== 'c' && t < target * .4, slow: t > target * 2.2};
     });
     const c = items.filter(x => x.ok).length, skipped = items.filter(x => x.st === 's').length;
     const wrongs = items.filter(x => !x.ok && x.a), traps = items.filter(x => x.st === 't').length;
@@ -1223,7 +1243,8 @@ function analyze(r) {
     out.sections[s.key] = {s, items, n, c, skipped, answered: n - skipped, wrong: wrongs.length, traps, fast: items.filter(x => x.fast).length,
       slow: items.filter(x => x.slow).length, byType, byLevel, cum: cumArr, used, cutoff, target,
       pct: c / n, score: domainScore(c / n), timedScore: domainScore(Math.min(c / n, estTimedPct)),
-      potential: domainScore((c + .7 * easyFix) / n), easyFix};
+      potential: domainScore((c + .7 * easyFix) / n), easyFix,
+      guessed: items.filter(x => x.g).length, lucky: items.filter(x => x.g && x.ok).length, sureWrong: items.filter(x => x.a && !x.ok && !x.g).length};
   }
   // חיבור
   if (r.essay) {
@@ -1263,9 +1284,10 @@ function analyze(r) {
   for (const k of ['verbal', 'quant', 'english']) for (const [type, v] of Object.entries(out.sections[k].byType))
     if (v.n >= 2 && v.c / v.n >= .75) out.strengths.push({sec: k, type, pct: v.c / v.n, c: v.c, n: v.n});
   out.strengths.sort((a, b) => b.pct - a.pct);
-  out.totals = {n: 0, c: 0, traps: 0, wrong: 0, fast: 0, skipped: 0, overTime: 0};
+  out.totals = {n: 0, c: 0, traps: 0, wrong: 0, fast: 0, skipped: 0, overTime: 0, guessed: 0, lucky: 0, sureWrong: 0};
   for (const A of Object.values(out.sections)) {
     out.totals.n += A.n; out.totals.c += A.c; out.totals.traps += A.traps; out.totals.wrong += A.wrong; out.totals.fast += A.fast; out.totals.skipped += A.skipped;
+    out.totals.guessed += A.guessed; out.totals.lucky += A.lucky; out.totals.sureWrong += A.sureWrong;
     if (A.used > CONFIG.realMinutes * 60 + 5) out.totals.overTime++;
   }
   return out;
@@ -1396,10 +1418,10 @@ function paceChart(A) {
 }
 function qmap(A, withTitles = true) {
   return `<div class="qmap">${A.items.map(x => {
-    const title = withTitles ? `שאלה ${x.i + 1} · ${x.q.type} · ${LEVEL[x.q.level]} · ${Math.round(x.t)} שנ׳` : `שאלה ${x.i + 1}`;
+    const title = (withTitles ? `שאלה ${x.i + 1} · ${x.q.type} · ${LEVEL[x.q.level]} · ${Math.round(x.t)} שנ׳` : `שאלה ${x.i + 1}`) + (x.g ? ' · ניחוש' : '');
     return x.a && !x.ok && x.q.video
-      ? `<a class="qcell ${x.st}" href="${x.q.video.url}" target="_blank" rel="noopener" title="${title} · לצפייה בהסבר בטיקטוק">${x.i + 1}</a>`
-      : `<span class="qcell ${x.st}" title="${title}">${x.i + 1}</span>`;
+      ? `<a class="qcell ${x.st} ${x.g ? 'g' : ''}" href="${x.q.video.url}" target="_blank" rel="noopener" title="${title} · לצפייה בהסבר בטיקטוק">${x.i + 1}</a>`
+      : `<span class="qcell ${x.st} ${x.g ? 'g' : ''}" title="${title}">${x.i + 1}</span>`;
   }).join('')}</div>`;
 }
 // "טעית? תראה אותי פותר": סרטון על השאלה עצמה קודם, ואז סרטונים לפי נושא (בלי כפילויות)
@@ -1428,16 +1450,23 @@ function videoCard(an) {
 /* ───────────────────────── בדיקת חיבור בתשלום (#essay) ───────────────────────── */
 const EORDER = 'psy_essay_order_v1';
 const wordCount = s => (s || '').trim().split(/\s+/).filter(Boolean).length;
+const DOCS_RE = /^https:\/\/(docs|drive)\.google\.com\/\S+$/;
+const MIME = {pdf: 'application/pdf', doc: 'application/msword', docx: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+  jpg: 'image/jpeg', jpeg: 'image/jpeg', png: 'image/png', webp: 'image/webp', heic: 'image/heic', heif: 'image/heif'};
 function renderEssayCheck() {
-  const E = CONFIG.essayService, o = lsGet(EORDER, {}), v = k => esc(o[k] || '');
+  const E = CONFIG.essayService, o = lsGet(EORDER, {}), v = k => esc(o[k] || ''), up = !!E.uploadUrl;
   const back = `<p style="margin:0"><a href="#" data-act="essay-exit">→ חזרה לדף הבית</a></p>`;
+  const via = (o.viaMail ? 'למייל' : '') + (o.viaMail && o.viaWa ? ' ו' : '') + (o.viaWa ? 'בווטסאפ' : '');
   if (o.sentAt) return `${brandBar()}<div class="wrap eo">${back}
     <div class="card stack"><span class="pill">📝 בדיקת חיבור</span><h2>קיבלתי את החיבור, תודה ${v('name')}!</h2>
-      <div class="ins good"><b>מה עכשיו?</b> ברגע שאראה את ההעברה בביט אתחיל לבדוק, והמשוב יגיע ל-<bdi dir="ltr">${v('email')}</bdi> תוך ${E.days} ימי עסקים.</div>
+      <div class="ins good"><b>מה עכשיו?</b> ברגע שאראה את ההעברה בביט אתחיל לבדוק, והמשוב יגיע ${via || 'אליך'} תוך ${E.days} ימי עסקים.</div>
       <p class="sub">ובינתיים, וגם אחרי המשוב: כל שאלה על החיבור, על ההערות או על כל דבר אחר בדרך, הווטסאפ שלי פתוח. באהבה ובכיף 🙂</p>
       <p class="sub" style="margin:0">רוצים לוודא שהחיבור הגיע? שלחו לי הודעת אישור קצרה:</p>
-      <div class="row"><a class="btn wa" href="${waLink(`היי ${CONFIG.teacherName}, שלחתי חיבור לבדיקה באתר והעברתי ${E.price} ₪ בביט${o.bitName ? ' (השם בביט: ' + o.bitName + ')' : ''}. השם שלי: ${o.name || ''}`)}" target="_blank" rel="noopener">${ICON.wa}אישור בווטסאפ</a><button class="btn" data-act="essay-new">לשלוח חיבור נוסף</button></div></div>
+      <div class="row"><a class="btn wa" href="${waLink(`היי ${CONFIG.teacherName}, שלחתי חיבור לבדיקה באתר והעברתי ${E.price} ₪ בביט. השם שלי: ${o.name || ''}`)}" target="_blank" rel="noopener">${ICON.wa}אישור בווטסאפ</a><button class="btn" data-act="essay-new">לשלוח חיבור נוסף</button></div></div>
   </div>${siteFooter()}`;
+  const tmode = up && o.tmode === 'image' ? 'image' : 'text', emode = o.emode === 'docs' || (up && o.emode === 'file') ? o.emode : 'text';
+  const radio = (name, val, cur, label) => `<label class="eo-mode"><input type="radio" name="eo-${name}" value="${val}" ${cur === val ? 'checked' : ''}><span>${label}</span></label>`;
+  const pane = (name, val, cur, html) => `<div class="eo-pane" data-for="${name}" data-v="${val}" ${cur === val ? '' : 'hidden'}>${html}</div>`;
   return `${brandBar()}<div class="wrap eo">${back}
   <section class="card stack">
     <span class="pill">📝 בדיקת חיבור אישית · ${E.price} ₪</span>
@@ -1447,7 +1476,7 @@ function renderEssayCheck() {
       <li><b>ציון משוער</b> לפי שני הממדים של הבחינה: תוכן ומבנה, ולשון</li>
       <li><b>הערות מפורטות</b> על הטיעון, המבנה, הניסוח והשגיאות</li>
       <li><b>3 דברים לשפר</b> כבר בחיבור הבא</li>
-      <li>הכול <b>במייל, תוך ${E.days} ימי עסקים</b></li>
+      <li>הכול <b>במייל או בווטסאפ, איך שנוח לך, תוך ${E.days} ימי עסקים</b></li>
     </ul>
     <div class="ins info"><b>וזה לא נגמר במשוב.</b> אחרי הבדיקה הווטסאפ שלי פתוח לכל שאלה: על ההערות, על החיבור הבא או על כל דבר אחר בדרך. באהבה ובכיף.</div>
   </section>
@@ -1456,46 +1485,108 @@ function renderEssayCheck() {
     <ol class="eo-steps">
       <li><b>כותבים חיבור</b> על נושא שבחרתם. כדאי לכתוב כמו בבחינה: 30 דקות, בלי עזרה, בערך 25 עד 50 שורות.</li>
       <li><b>מעבירים ${E.price} ₪ בביט</b> למספר <bdi dir="ltr" class="ltr"><b>${esc(CONFIG.phoneDisplay)}</b></bdi> <button class="btn small" data-act="eo-copy">העתקה</button><br><span class="sub">בהערה בביט כתבו "חיבור" ואת השם שלכם.</span></li>
-      <li><b>שולחים כאן</b> את הנושא ואת החיבור.</li>
+      <li><b>שולחים כאן</b> את הנושא ואת החיבור${up ? ': בהקלדה, כקובץ או כקישור' : ': בהקלדה או כקישור ל-Google Docs'}.</li>
     </ol>
     <div class="eo-grid">
       <div class="field"><label for="eo-name">שם</label><input id="eo-name" autocomplete="given-name" value="${v('name')}"></div>
-      <div class="field"><label for="eo-email">אימייל (לשם יישלח המשוב)</label><input id="eo-email" type="email" inputmode="email" autocomplete="email" dir="ltr" value="${v('email')}"></div>
-      <div class="field"><label for="eo-phone">טלפון</label><input id="eo-phone" type="tel" inputmode="tel" autocomplete="tel" dir="ltr" placeholder="050-0000000" value="${v('phone')}"></div>
-      <div class="field"><label for="eo-bitName">שם בביט (אם שילם מישהו אחר, למשל הורה)</label><input id="eo-bitName" value="${v('bitName')}"></div>
+      <div class="field"><label for="eo-phone">טלפון נייד</label><input id="eo-phone" type="tel" inputmode="tel" autocomplete="tel" dir="ltr" placeholder="050-0000000" value="${v('phone')}"></div>
     </div>
-    <div class="field"><label for="eo-topic">נושא החיבור (העתיקו את ההנחיה)</label><textarea id="eo-topic" class="essay-box" style="min-height:90px" placeholder="למשל: יש הטוענים כי... מהי עמדתכם? נמקו.">${v('topic')}</textarea></div>
-    <div class="field"><label for="eo-essay">החיבור <span class="sub" id="eo-wc">${wordCount(o.essay)} מילים</span></label><textarea id="eo-essay" class="essay-box" placeholder="הדביקו או כתבו כאן את החיבור. Enter בין פסקה לפסקה." spellcheck="false">${v('essay')}</textarea></div>
-    <p class="muted" style="margin:0">הטיוטה נשמרת אוטומטית במכשיר שלך, אפשר לסגור ולחזור.</p>
-    <label class="consent"><input type="checkbox" id="eo-paid" ${o.paid ? 'checked' : ''}><span>העברתי ${E.price} ₪ בביט למספר ${esc(CONFIG.phoneDisplay)}</span></label>
-    <label class="consent"><input type="checkbox" id="eo-terms" ${o.terms ? 'checked' : ''}><span>קראתי ואני מסכים/ה ל<a href="#" data-act="doc" data-v="terms">תנאי השימוש</a> ול<a href="#" data-act="doc" data-v="privacy">מדיניות הפרטיות</a></span></label>
+    <fieldset class="eo-fs"><legend>איך לשלוח לך את המשוב? (אפשר לסמן את שניהם)</legend>
+      <label class="consent"><input type="checkbox" id="eo-viaWa" ${o.viaWa ? 'checked' : ''}><span>בווטסאפ, למספר שלמעלה</span></label>
+      <label class="consent"><input type="checkbox" id="eo-viaMail" ${o.viaMail ? 'checked' : ''}><span>במייל</span></label>
+      <div class="field" id="eo-email-f" ${o.viaMail ? '' : 'hidden'}><label for="eo-email">אימייל</label><input id="eo-email" type="email" inputmode="email" autocomplete="email" dir="ltr" value="${v('email')}"></div>
+    </fieldset>
+    <fieldset class="eo-fs"><legend>נושא החיבור</legend>
+      ${up ? `<div class="eo-modes">${radio('tmode', 'text', tmode, '⌨️ הקלדה')}${radio('tmode', 'image', tmode, '📷 צילום של המטלה')}</div>` : ''}
+      ${pane('tmode', 'text', tmode, `<label class="sr-only" for="eo-topic">נושא החיבור</label><textarea id="eo-topic" class="essay-box" style="min-height:90px" placeholder="העתיקו את ההנחיה, למשל: יש הטוענים כי... מהי עמדתכם? נמקו.">${v('topic')}</textarea>`)}
+      ${up ? pane('tmode', 'image', tmode, `<label class="sr-only" for="eo-topicFile">צילום של המטלה</label><input id="eo-topicFile" type="file" accept="image/*,.pdf"><p class="muted" style="margin:6px 0 0">צילום מסך או תמונה של ההנחיה.</p>`) : ''}
+    </fieldset>
+    <fieldset class="eo-fs"><legend>החיבור</legend>
+      <div class="eo-modes">${radio('emode', 'text', emode, '⌨️ הקלדה')}${radio('emode', 'docs', emode, '🔗 Google Docs')}${up ? radio('emode', 'file', emode, '📎 קובץ (Word / PDF / תמונה)') : ''}</div>
+      ${pane('emode', 'text', emode, `<label class="sr-only" for="eo-essay">החיבור</label><span class="sub" id="eo-wc">${wordCount(o.essay)} מילים</span><textarea id="eo-essay" class="essay-box" placeholder="הדביקו או כתבו כאן את החיבור. Enter בין פסקה לפסקה." spellcheck="false">${v('essay')}</textarea>`)}
+      ${pane('emode', 'docs', emode, `<label for="eo-docs">קישור למסמך</label><input id="eo-docs" type="url" inputmode="url" dir="ltr" placeholder="https://docs.google.com/document/d/..." value="${v('docs')}">
+        <p class="muted" style="margin:6px 0 0">במסמך: <b>שיתוף</b> ← "כל מי שיש לו את הקישור" ← <b>צפייה</b> (או <b>הערות</b>, ואז אוכל להעיר ישירות בתוך המסמך). כדי לבדוק, פתחו את הקישור בחלון גלישה בסתר.</p>
+        <label class="consent"><input type="checkbox" id="eo-docsOk" ${o.docsOk ? 'checked' : ''}><span>וידאתי שהקישור נפתח גם למי שלא מחובר לחשבון שלי</span></label>`)}
+      ${up ? pane('emode', 'file', emode, `<label class="sr-only" for="eo-essayFile">קובץ החיבור</label><input id="eo-essayFile" type="file" multiple accept=".pdf,.doc,.docx,image/*"><p class="muted" style="margin:6px 0 0">קובץ Word או PDF, או עד 5 תמונות של דפים בכתב יד. ודאו שהכתב ברור ושהקובץ נפתח אצלכם.</p>`) : ''}
+    </fieldset>
+    <p class="muted" style="margin:0">הטקסט שהקלדתם נשמר אוטומטית במכשיר, אפשר לסגור ולחזור. קבצים צריך לבחור מחדש.</p>
+    <label class="consent"><input type="checkbox" id="eo-paid" ${o.paid ? 'checked' : ''}><span>העברתי ${E.price} ₪ בביט למספר <bdi dir="ltr">${esc(CONFIG.phoneDisplay)}</bdi></span></label>
+    <label class="consent"><input type="checkbox" id="eo-terms" ${o.terms ? 'checked' : ''}><span>קראתי ואני מסכים/ה ל<a href="#" data-act="doc" data-v="terms">תנאי השימוש</a> (כולל התנאים של בדיקת החיבור) ול<a href="#" data-act="doc" data-v="privacy">מדיניות הפרטיות</a>. החיבור נכתב על ידי.</span></label>
     <div><button class="btn primary big" data-act="eo-send">שליחת החיבור לבדיקה</button></div>
   </section>
   </div>${siteFooter()}`;
 }
+function applyEoModes() {
+  document.querySelectorAll('.eo-pane').forEach(p => { const r = document.querySelector(`input[name="eo-${p.dataset.for}"]:checked`); p.hidden = (r ? r.value : 'text') !== p.dataset.v; });
+  const f = $('#eo-email-f'); if (f) f.hidden = !$('#eo-viaMail')?.checked;
+}
+// תמונות גדולות מוקטנות לפני ההעלאה (מספיק לקריאה, ועולה מהר גם בסלולר)
+async function shrinkImage(file) {
+  if (!/^image\/(jpeg|png|webp)$/.test(file.type)) return file;
+  try {
+    const bmp = await createImageBitmap(file), k = Math.min(1, 2000 / Math.max(bmp.width, bmp.height));
+    if (k === 1 && file.size < 1.5e6) return file;
+    const c = document.createElement('canvas'); c.width = Math.round(bmp.width * k); c.height = Math.round(bmp.height * k);
+    c.getContext('2d').drawImage(bmp, 0, 0, c.width, c.height);
+    const b = await new Promise(r => c.toBlob(r, 'image/jpeg', 0.85));
+    return b ? new File([b], file.name.replace(/\.\w+$/, '') + '.jpg', {type: 'image/jpeg'}) : file;
+  } catch (e) { return file; }
+}
+const toB64 = f => new Promise((res, rej) => { const r = new FileReader(); r.onload = () => res(String(r.result).split(',')[1]); r.onerror = rej; r.readAsDataURL(f); });
+async function uploadFiles(name, list) {
+  const files = [];
+  for (const {role, file} of list) {
+    const f = await shrinkImage(file), type = MIME[(f.name.split('.').pop() || '').toLowerCase()] || f.type || '';
+    if (!Object.values(MIME).includes(type)) throw new Error('סוג הקובץ ' + f.name + ' לא נתמך. אפשר Word, PDF או תמונה');
+    if (f.size > 10e6) throw new Error('הקובץ ' + f.name + ' גדול מדי (עד 10MB)');
+    files.push({role, filename: f.name, type, data: await toB64(f)});
+  }
+  const res = await fetch(CONFIG.essayService.uploadUrl, {method: 'POST', body: JSON.stringify({name, files})}).then(r => r.json());
+  if (!res.ok) throw new Error('ההעלאה נכשלה');
+  return res;
+}
 async function sendEssayOrder() {
-  const val = id => ($('#eo-' + id)?.value || '').trim(), E = CONFIG.essayService, F = CONFIG.leadForm.fields;
-  const name = val('name'), email = val('email'), phone = val('phone').replace(/[^\d+]/g, ''), bitName = val('bitName'), topic = val('topic');
-  const essay = ($('#eo-essay')?.value || '').trim(), words = wordCount(essay);
+  const val = id => ($('#eo-' + id)?.value || '').trim(), on = id => !!$('#eo-' + id)?.checked, E = CONFIG.essayService, F = CONFIG.leadForm.fields;
+  const name = val('name'), phone = val('phone').replace(/[^\d+]/g, ''), viaWa = on('viaWa'), viaMail = on('viaMail'), email = viaMail ? val('email') : '';
+  const tmode = document.querySelector('input[name="eo-tmode"]:checked')?.value || 'text', emode = document.querySelector('input[name="eo-emode"]:checked')?.value || 'text';
+  const topic = val('topic'), essay = ($('#eo-essay')?.value || '').trim(), words = wordCount(essay), docs = val('docs');
+  const topicFile = $('#eo-topicFile')?.files[0], essayFiles = [...($('#eo-essayFile')?.files || [])];
   const fail = (msg, id) => { toast(msg); $('#eo-' + id)?.focus(); };
   if (!name) return fail('נא לכתוב שם', 'name');
-  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return fail('נא להזין אימייל תקין, לשם יישלח המשוב', 'email');
   if (!/^(\+?972|0)5\d{8}$/.test(phone)) return fail('נא להזין מספר נייד תקין', 'phone');
-  if (topic.length < 10) return fail('נא להעתיק את נושא החיבור', 'topic');
-  if (words < 120) return fail(`החיבור קצר מדי (${words} מילים). חיבור בבחינה הוא בדרך כלל 300 מילים ומעלה`, 'essay');
-  if (essay.length > 15000) return fail('החיבור ארוך מדי', 'essay');
-  if (!$('#eo-paid')?.checked) return fail(`התשלום (${E.price} ₪ בביט) הוא לפני הבדיקה. סמנו אחרי ההעברה`, 'paid');
-  if (!$('#eo-terms')?.checked) return fail('יש לאשר את תנאי השימוש', 'terms');
-  const results = `📝 בדיקת חיבור · ${E.price} ₪ בביט${bitName ? ' (שם בביט: ' + bitName + ')' : ''} · ${words} מילים · נושא: ${topic.slice(0, 1500)}`;
-  // פסקאות מסומנות ב-¶, כדי שיישארו ברורות גם אם הטופס מאחד שורות
-  const text = essay.split(/\n\s*\n|\n/).map(p => p.trim()).filter(Boolean).map(p => '¶ ' + p).join('\n');
-  const body = new URLSearchParams({['entry.' + F.name]: name, ['entry.' + F.phone]: phone, ['entry.' + F.email]: email, ['entry.' + F.results]: results, ['entry.' + F.code]: text});
-  const btn = $('[data-act=eo-send]'); if (btn) btn.disabled = true;
+  if (!viaWa && !viaMail) return fail('נא לסמן איך לשלוח לך את המשוב: וואטסאפ, מייל או שניהם', 'viaWa');
+  if (viaMail && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return fail('נא להזין אימייל תקין', 'email');
+  if (tmode === 'text' && topic.length < 10) return fail('נא להעתיק את נושא החיבור', 'topic');
+  if (tmode === 'image' && !topicFile) return fail('נא לצרף צילום של המטלה', 'topicFile');
+  if (emode === 'text' && words < 120) return fail(`החיבור קצר מדי (${words} מילים). חיבור בבחינה הוא בדרך כלל 300 מילים ומעלה`, 'essay');
+  if (emode === 'text' && essay.length > 15000) return fail('החיבור ארוך מדי', 'essay');
+  if (emode === 'docs' && !DOCS_RE.test(docs)) return fail('נא להדביק קישור מלא ל-Google Docs (מתחיל ב-https://docs.google.com)', 'docs');
+  if (emode === 'docs' && !on('docsOk')) return fail('נא לוודא שהקישור פתוח לצפייה ולסמן', 'docsOk');
+  if (emode === 'file' && !essayFiles.length) return fail('נא לצרף את קובץ החיבור', 'essayFile');
+  if (emode === 'file' && essayFiles.length > 5) return fail('אפשר לצרף עד 5 קבצים', 'essayFile');
+  if (!on('paid')) return fail(`התשלום (${E.price} ₪ בביט) הוא לפני הבדיקה. סמנו אחרי ההעברה`, 'paid');
+  if (!on('terms')) return fail('יש לאשר את תנאי השימוש', 'terms');
+  const btn = $('[data-act=eo-send]'); if (btn) { btn.disabled = true; btn.textContent = 'שולח...'; }
+  const restore = () => { if (btn) { btn.disabled = false; btn.textContent = 'שליחת החיבור לבדיקה'; } };
   try {
+    let up = {links: []};
+    const toUp = [...(tmode === 'image' ? [{role: 'נושא', file: topicFile}] : []), ...(emode === 'file' ? essayFiles.map(file => ({role: 'חיבור', file})) : [])];
+    if (toUp.length) {
+      try { up = await uploadFiles(name, toUp); }
+      catch (e) { restore(); toast((e.message && /[א-ת]/.test(e.message) ? e.message : 'ההעלאה לא הצליחה') + '. אפשר גם להקליד או לשלוח קישור'); return; }
+    }
+    const link = role => up.links.filter(l => l.role === role).map(l => l.url).join(' ');
+    const results = `📝 בדיקת חיבור · ${E.price} ₪ בביט · משוב ב: ${[viaWa && 'וואטסאפ', viaMail && 'מייל'].filter(Boolean).join(' + ')}`
+      + ` · חיבור: ${emode === 'text' ? `הקלדה (${words} מילים)` : emode === 'docs' ? 'Google Docs' : 'קובץ'}`
+      + ` · נושא: ${tmode === 'image' ? 'בתמונה ' + link('נושא') : topic.slice(0, 1500)}`;
+    // פסקאות מסומנות ב-¶, כדי שיישארו ברורות גם אם הטופס מאחד שורות
+    const text = emode === 'docs' ? 'Google Docs: ' + docs : emode === 'file' ? 'קבצים: ' + link('חיבור') + (up.folder ? ' · תיקייה: ' + up.folder : '')
+      : essay.split(/\n\s*\n|\n/).map(p => p.trim()).filter(Boolean).map(p => '¶ ' + p).join('\n');
+    const body = new URLSearchParams({['entry.' + F.name]: name, ['entry.' + F.phone]: phone, ['entry.' + F.email]: email, ['entry.' + F.results]: results, ['entry.' + F.code]: text});
     await fetch(CONFIG.leadForm.url, {method: 'POST', mode: 'no-cors', body});
-    lsSet(EORDER, {name, email, phone, bitName, sentAt: new Date().toISOString()}); // החיבור עצמו לא נשאר במכשיר אחרי השליחה
+    lsSet(EORDER, {name, phone, email: val('email'), viaWa, viaMail, sentAt: new Date().toISOString()}); // החיבור עצמו לא נשאר במכשיר אחרי השליחה
     track('essay'); render(); window.scrollTo(0, 0);
-  } catch (e) { if (btn) btn.disabled = false; toast('השליחה לא הצליחה. בדקו את החיבור לאינטרנט ונסו שוב, או שלחו לי בווטסאפ'); }
+  } catch (e) { restore(); toast('השליחה לא הצליחה. בדקו את החיבור לאינטרנט ונסו שוב, או שלחו לי בווטסאפ'); }
 }
 
 // "רוצה שאחזור אליך?": טלפון (+ מייל רשות) והתוצאות נשלחים ל-Google Form של המורה (רק אם הוגדר CONFIG.leadForm.url, ורק בלחיצה)
@@ -1504,7 +1595,7 @@ function leadCard(r) {
   const sent = S && S.id === r.id && S.leadSent;
   return `<div class="card noprint" id="lead-card"><h3>📲 רוצה שאחזור אליך?</h3>
     ${sent ? `<div class="ins good"><b>קיבלתי, תודה!</b>אחזור אליך בקרוב לתאם את שיחת הייעוץ.</div>` : `
-    <p class="sub" style="margin:6px 0 0">משאירים מספר, ואני מתקשר לתאם את שיחת הייעוץ (חינם, חצי שעה). התוצאות מגיעות אליי יחד עם המספר, כדי שאגיע מוכן.</p>
+    <p class="sub" style="margin:6px 0 0">משאירים מספר, ואני מתקשר לתאם את שיחת הייעוץ (חינם, רבע שעה). התוצאות מגיעות אליי יחד עם המספר, כדי שאגיע מוכן.</p>
     <div class="lead-form"><label class="sr-only" for="lead-phone">מספר טלפון</label><input id="lead-phone" type="tel" inputmode="tel" autocomplete="tel" placeholder="טלפון: 050-0000000" dir="ltr"><button class="btn primary" data-act="lead-send">שליחה</button>
       <label class="sr-only" for="lead-email">אימייל (רשות)</label><input id="lead-email" type="email" inputmode="email" autocomplete="email" placeholder="אימייל (רשות)" dir="ltr" style="grid-column:1/-1"></div>
     <p class="consent-note" style="margin:8px 0 0">המספר ישמש רק כדי לחזור אליך לגבי השיחה. <a href="#" data-act="doc" data-v="privacy">מדיניות פרטיות</a></p>`}</div>`;
@@ -1517,6 +1608,7 @@ async function sendLead() {
   const {r, an} = CURRENT, code = CURRENT.code || await encodeRecord(r), F = CONFIG.leadForm.fields;
   const results = `רב-תחומי ${an.gen.multi} · דו-תחומי ${an.gen.bi} · מילולי ${an.dom.verbal} · כמותי ${an.dom.quant} · אנגלית ${an.dom.english}`
     + `${r.target ? ' · יעד ' + r.target : ''} · ${r.mode === 'timed' ? 'עם זמן' : 'בלי זמן'} · פערים: ${an.gaps.slice(0, 3).map(x => x.type).join(', ') || '—'}`
+    + `${an.totals.guessed ? ` · ניחושים ${an.totals.guessed} (${an.totals.lucky} נכונים) · טעויות בביטחון ${an.totals.sureWrong}` : ''}`
     + ` · עדכונים: ${r.optin ? 'כן' : 'לא'}`;
   const body = new URLSearchParams({['entry.' + F.name]: r.name || '', ['entry.' + F.phone]: phone, ['entry.' + F.email]: email,
     ['entry.' + F.results]: results, ['entry.' + F.code]: code});
@@ -1557,6 +1649,21 @@ function freeExplain(an) {
     ${rest ? `<div class="cta-row noprint">${sendCta('לקבל את כל ההסברים בשיחה', 'small')}</div>` : ''}</div>`;
 }
 // הזמן לתלמיד: כמה דקות לקח כל פרק מול 20 בבחינה, ומה זה אומר
+// ניחוש מול ידיעה: מה באמת ידעת, ואילו טעויות נעשו בביטחון מלא (שם יש הבנה שגויה לתקן)
+function guessCard(an) {
+  const T = an.totals, knew = T.c - T.lucky;
+  if (!T.guessed) return `<div class="card"><h3>🎲 ידעת או ניחשת?</h3><p class="sub" style="margin:6px 0 0">לא סימנת ניחושים במבחן הזה. בפעם הבאה, כשאתם לא בטוחים, לחצו "ניחשתי" ליד התשובה: כך הדוח מפריד בין מה שבאמת ידעתם לבין מזל.</p></div>`;
+  const row = k => { const A = an.sections[k]; return A.guessed ? `<div class="secline"><span><span class="dot" style="background:${COLORS[k]}"></span><b>${A.s.name}</b></span><span class="sub">${A.guessed} ניחושים · ${A.lucky} פגעו</span></div>` : ''; };
+  return `<div class="card"><h3>🎲 ידעת או ניחשת?</h3>
+    <div class="kpis" style="margin-top:10px">
+      <div class="kpi"><div class="k">תשובות נכונות</div><div class="v">${T.c}</div><div class="s">מתוך ${T.n}</div></div>
+      <div class="kpi"><div class="k">מתוכן ידעת באמת</div><div class="v">${knew}</div><div class="s">${T.lucky ? T.lucky + ' נכונות בזכות ניחוש' : 'בלי מזל, הכול ידע'}</div></div>
+      <div class="kpi"><div class="k">טעויות בביטחון</div><div class="v">${T.sureWrong}</div><div class="s">ענית בלי לסמן ניחוש</div></div>
+    </div>
+    ${['verbal', 'quant', 'english'].map(row).join('')}
+    ${T.sureWrong ? `<div class="ins warn"><b>הטעויות בביטחון הן הכי חשובות.</b> בשאלות האלה היית בטוח/ה, ובכל זאת טעית. זה סימן לכלל או לשיטה שנלמדו לא נכון, ובדיוק שם תיקון אחד מחזיר הרבה נקודות.</div>` : ''}
+    ${T.lucky ? `<p class="sub" style="margin:8px 0 0">ניחושים שפגעו נספרים בציון, כמו בבחינה. אבל על מזל אי אפשר לסמוך, ולכן כדאי לעבור גם עליהם.</p>` : ''}</div>`;
+}
 function timeCard(an) {
   const real = CONFIG.realMinutes * 60, keys = ['verbal', 'quant', 'english'];
   const row = keys.map(k => { const A = an.sections[k], over = A.used > real + 5;
@@ -1602,7 +1709,7 @@ function scoreMeaning(g, target) {
     ${target ? `<div class="ins info"><b>מה נדרש כדי להגיע ל-${target}</b>${GAP_NOTE(target - g)} ${tier}</div>` : ''}
     <p class="muted" style="margin:10px 0 0">תמונה כללית בלבד. דרישות הקבלה משתנות בין מוסדות, חוגים ושנים, ותלויות גם בבגרות. תמיד כדאי לבדוק באתר המוסד.</p></div>`;
 }
-const QLEGEND =`<div class="legend"><span><i class="sw" style="background:var(--good)"></i>נכונה</span><span><i class="sw" style="background:var(--bad)"></i>שגויה</span><span><i class="sw" style="background:var(--trap)"></i>שגויה — נפל במלכודת</span><span><i class="sw" style="background:var(--skip)"></i>לא נענתה</span></div>`;
+const QLEGEND =`<div class="legend"><span><i class="sw" style="background:var(--good)"></i>נכונה</span><span><i class="sw" style="background:var(--bad)"></i>שגויה</span><span><i class="sw" style="background:var(--trap)"></i>שגויה — נפל במלכודת</span><span><i class="sw" style="background:var(--skip)"></i>לא נענתה</span><span><i class="sw gq">?</i>ניחוש</span></div>`;
 function potentialChart(now, pot, target) {
   const W = innerWidth < 560 ? 380 : 560, H = 120, x0 = 10, x1 = W - 10, X = v => x1 - (x1 - x0) * (clamp(v, 200, 800) - 200) / 600;
   // תווית מחוץ לפס כשיש מקום משמאל, ובתוכו כשהפס ארוך מדי
@@ -1623,6 +1730,7 @@ function potentialChart(now, pot, target) {
 async function encodeRecord(r) {
   const c = {v: 1, b: BANK.version, i: r.id, n: r.name, g: r.target, m: r.mode, d: r.date,
     a: SECS.map(s => s.questions.map(q => r.ans[q.id] || 0).join('')),
+    q: SECS.map(s => s.questions.map(q => (r.guess || {})[q.id] ? 1 : 0).join('')),
     t: SECS.map(s => s.questions.map(q => Math.round(r.t[q.id] || 0))),
     u: SECS.map(s => Math.round(r.used[s.key] || 0)),
     e: r.essay ? [r.essay.prompt, r.essay.text, Math.round(r.essay.secs), r.essay.pasted || 0] : null, o: r.optin ? 1 : 0};
@@ -1644,9 +1752,9 @@ async function decodeRecord(code) {
   if (m[1] === '1') bytes = new Uint8Array(await new Response(new Blob([bytes]).stream().pipeThrough(new DecompressionStream('deflate-raw'))).arrayBuffer());
   const c = JSON.parse(new TextDecoder().decode(bytes));
   if (c.b && c.b !== BANK.version) toast('שימו לב: הקוד נוצר בגרסה אחרת של המבחן');
-  const r = {v: 1, id: c.i, name: c.n, target: c.g, mode: c.m, date: c.d, ans: {}, t: {}, used: {}, essay: null};
+  const r = {v: 1, id: c.i, name: c.n, target: c.g, mode: c.m, date: c.d, ans: {}, guess: {}, t: {}, used: {}, essay: null};
   SECS.forEach((s, si) => {
-    s.questions.forEach((q, qi) => { const a = +c.a[si][qi]; if (a) r.ans[q.id] = a; r.t[q.id] = c.t[si][qi] || 0; });
+    s.questions.forEach((q, qi) => { const a = +c.a[si][qi]; if (a) r.ans[q.id] = a; if (c.q && +c.q[si][qi]) r.guess[q.id] = 1; r.t[q.id] = c.t[si][qi] || 0; });
     r.used[s.key] = c.u[si];
   });
   if (c.e) r.essay = {prompt: c.e[0], text: c.e[1], secs: c.e[2], pasted: c.e[3] || 0};
@@ -1661,7 +1769,8 @@ function summaryText(r, an, code) {
 ציון משוער רב-תחומי: ${g.multi} | דו-תחומי: ${g.bi}
 מילולי ${d.verbal} · כמותי ${d.quant} · אנגלית ${d.english}${an.essay ? ` · חיבור ${an.essay.final.total}/12 (הערכה)` : ''}
 ${r.mode === 'timed' ? 'עשיתי עם זמן' : 'עשיתי בלי הגבלת זמן'}${r.target ? ` · היעד שלי: ${r.target}` : ''}${r.optin ? '\nמאשר/ת קבלת עדכונים ✓' : ''}
-פערים עיקריים: ${gaps || '—'}
+פערים עיקריים: ${gaps || '—'}${an.totals.guessed ? `
+ניחושים: ${an.totals.guessed} (מתוכם ${an.totals.lucky} נכונים) · טעויות בביטחון: ${an.totals.sureWrong}` : ''}
 
 אשמח לקבוע את שיחת הייעוץ החינמית 🙂
 
@@ -1730,6 +1839,7 @@ function studentReport(r, an, teacher) {
   ${partial ? '' : `<div class="card"><h3>מהיום לפוטנציאל</h3>${potentialChart(g.multi, pot.multi, target)}
     ${easyLostAll > hardLostAll ? '<p class="sub">רוב הנקודות שחסרות לך נמצאות בשאלות שהן <b>לא</b> הקשות במבחן. זה החלק בפסיכומטרי שהכי מהר לשפר עם שיטה נכונה, תחקור טעויות וליווי צמוד.</p>' : '<p class="sub">הנקודות הבאות שלך נמצאות בשאלות המאתגרות. כאן נדרשים כלים מתקדמים ואסטרטגיה מדויקת, ובדיוק על זה עובדים בליווי.</p>'}</div>`}
   ${freeExplain(an)}
+  ${guessCard(an)}
   ${timeCard(an)}
   ${videoCard(an)}
   <div class="card"><h3>מפת התשובות</h3><p class="muted">טעות עם ▶ פותחת סרטון הסבר בטיקטוק. את ההסברים לשאר השאלות נעבור יחד בשיחה.</p>
@@ -1743,7 +1853,7 @@ function studentReport(r, an, teacher) {
     <div class="row">${sendCta('שליחת התוצאות לווטסאפ')}<button class="btn" data-act="copy-code">העתקת קוד התוצאות</button><button class="btn" data-act="download">הורדת קובץ תוצאות</button></div>
     ${SITE_LINK ? `<p class="sub">מכירים מישהו שגם נבחן? <a href="${'https://wa.me/?text=' + encodeURIComponent('עשיתי מבחן אבחון פסיכומטרי חינמי, שווה לנסות: ' + SITE_LINK)}" target="_blank" rel="noopener">שלחו לו את האבחון</a></p>` : ''}
     ${teacher ? '' : '<p class="muted"><a href="#" data-act="restart">מבחן חדש</a></p>'}</div>`}
-  ${contactCard('בואו נדבר', 'שיחת ייעוץ של חצי שעה, בחינם וללא התחייבות.')}
+  ${contactCard('בואו נדבר', 'שיחת ייעוץ של רבע שעה, בחינם וללא התחייבות.')}
   <p class="muted" style="text-align:center">הציונים הם הערכה המבוססת על פרק אחד מכל תחום. ציון החיבור הוא הערכה אוטומטית גסה.</p>
   ${teacher ? '' : `<div class="report-pad"></div><div class="sticky-cta noprint">${sendCta('לשלוח תוצאות ולקבוע שיחה')}</div>`}`;
 }
@@ -1902,6 +2012,7 @@ document.addEventListener('click', async ev => {
     case 'go': S.qi = +v; save(); render(); break;
     case 'next': S.qi = Math.min(S.qi + 1, SEC[curKey()].questions.length - 1); save(); render(); break;
     case 'prev': S.qi = Math.max(0, S.qi - 1); save(); render(); break;
+    case 'guess': { const q = SEC[curKey()].questions[S.qi]; S.guess ||= {}; S.guess[q.id] = !S.guess[q.id]; if (!S.guess[q.id]) delete S.guess[q.id]; save(); render(); break; }
     case 'mark': { const q = SEC[curKey()].questions[S.qi]; S.marks[q.id] = !S.marks[q.id]; save(); render(); break; }
     case 'formulas': formulasModal(); break;
     case 'lead-send': sendLead(); break;
@@ -1924,7 +2035,7 @@ document.addEventListener('click', async ev => {
     case 'essay-exit': view.essay = false; history.replaceState(null, '', location.pathname); render(); window.scrollTo(0, 0); break;
     case 'eo-copy': try { await navigator.clipboard.writeText(CONFIG.phoneDisplay.replace(/-/g, '')); toast('המספר הועתק'); } catch (e) { toast(CONFIG.phoneDisplay); } break;
     case 'eo-send': sendEssayOrder(); break;
-    case 'essay-new': { const o = lsGet(EORDER, {}); lsSet(EORDER, {name: o.name, email: o.email, phone: o.phone, bitName: o.bitName}); render(); window.scrollTo(0, 0); break; }
+    case 'essay-new': { const o = lsGet(EORDER, {}); lsSet(EORDER, {name: o.name, email: o.email, phone: o.phone, viaWa: o.viaWa, viaMail: o.viaMail}); render(); window.scrollTo(0, 0); break; }
     case 'inapp-ok': try { localStorage.setItem('psy_inapp_ok', '1'); } catch (e) {} render(); break;
     case 'inapp-copy': try { await navigator.clipboard.writeText(SITE_LINK); toast('הקישור הועתק. הדביקו אותו בכרום או בספארי'); } catch (e) { modal(`<h3>העתיקו את הקישור</h3><input value="${esc(SITE_LINK)}" dir="ltr" readonly onfocus="this.select()"><div class="row" style="margin-top:12px"><button class="btn" data-act="close">סגירה</button></div>`); } break;
     case 'c-wa': { const t = contactText(); if (t) openExt(waLink(t)); break; }
@@ -2023,11 +2134,15 @@ window.addEventListener('hashchange', () => {
   if (d !== view.demo || e !== view.essay) { view.demo = d; view.essay = e; render(); window.scrollTo(0, 0); }
   teacherFromHash();
 });
-// טיוטת בדיקת החיבור נשמרת בכל הקלדה, כדי שלא תאבד אם הדפדפן נסגר
+// טיוטת בדיקת החיבור נשמרת בכל הקלדה, כדי שלא תאבד אם הדפדפן נסגר (קבצים לא נשמרים)
 document.addEventListener('input', ev => {
-  if (!view.essay || !ev.target.closest('#eo-form')) return;
-  const o = lsGet(EORDER, {}); o[ev.target.id.slice(3)] = ev.target.type === 'checkbox' ? ev.target.checked : ev.target.value; lsSet(EORDER, o);
-  if (ev.target.id === 'eo-essay') $('#eo-wc').textContent = wordCount(ev.target.value) + ' מילים';
+  const t = ev.target;
+  if (!view.essay || !t.closest('#eo-form') || t.type === 'file') return;
+  const o = lsGet(EORDER, {});
+  if (t.type === 'radio') o[t.name.slice(3)] = t.value; else o[t.id.slice(3)] = t.type === 'checkbox' ? t.checked : t.value;
+  lsSet(EORDER, o);
+  if (t.type === 'radio' || t.id === 'eo-viaMail') applyEoModes();
+  if (t.id === 'eo-essay') $('#eo-wc').textContent = wordCount(t.value) + ' מילים';
 });
 render();
 teacherFromHash();
