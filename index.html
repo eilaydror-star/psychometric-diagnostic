@@ -242,7 +242,7 @@ details.qd .body .stem{font-size:16px}
 .eo{display:grid;gap:18px;padding-top:18px;padding-bottom:28px;max-width:860px}.eo h1{font-size:clamp(26px,6vw,36px);margin:0}
 .eo-get,.eo-steps{margin:0;padding-inline-start:22px;line-height:1.9}.eo-steps li{margin-bottom:8px}
 .eo-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}@media(max-width:640px){.eo-grid{grid-template-columns:1fr}}
-.eo [hidden]{display:none!important}.eo-was{opacity:.6;margin-inline-start:4px}
+.price-tag{font-weight:800;white-space:nowrap}.eo [hidden]{display:none!important}.eo-was{opacity:.6;margin-inline-start:4px}
 .eo-fs{border:1px solid var(--line);border-radius:12px;padding:12px 14px 14px;margin:0;display:grid;gap:10px;min-width:0}.eo-fs legend{font-weight:700;padding:0 6px}
 .eo-modes{display:flex;flex-wrap:wrap;gap:8px}.eo-mode{position:relative;cursor:pointer}.eo-mode input{position:absolute;opacity:0;inset:0;margin:0;cursor:pointer}
 .eo-mode span{display:inline-block;padding:7px 14px;border:1px solid var(--line-2);border-radius:999px;font-weight:600;font-size:15px}
@@ -436,7 +436,7 @@ const CONFIG = {
   about: {
     intro: 'מבחן דיאגנוסטי הוא רק נקודת ההתחלה – הוא לא קובע את הציון הסופי שלך, אלא מראה לנו בדיוק איפה היתרונות שלך ואיפה כדאי להתמקד.',
     bio: [
-      'שמי עילאי, סטודנט לרפואה באוניברסיטת בר-אילן ומורה למתמטיקה. במשך שנים לימדתי תלמידים לבגרויות במתמטיקה והוריתי במרכזי למידה, כך שהוראה ופירוק של חומר מורכב הם הבית השני שלי.',
+      'שמי עילאי, סטודנט לרפואה ומורה למתמטיקה. במשך שנים לימדתי תלמידים לבגרויות במתמטיקה והוריתי במרכזי למידה, כך שהוראה ופירוק של חומר מורכב הם הבית השני שלי.',
       'את הדרך שלי בפסיכומטרי התחלתי בדיוק כמוך. התחלתי עם ידע חלקי: בכמותי הרגשתי בבית, אבל במילולי ובאנגלית היה לי עוד הרבה מה ללמוד. ניגשתי למבחן 8 פעמים, עם ירידות, קיפאון ושוב עליות, ומכל ניסיון למדתי משהו חדש, עד שהגעתי ל-736. תוך כדי הדרך, במקום לתעב את המבחן, עברתי סוג של טרנספורמציה (אפשר לקרוא לזה תסמונת שטוקהולם...) ופשוט התאהבתי בו.',
       'מאז שפיצחתי את המבחן, לקחתי את הניסיון הפדגוגי שלי מהוראת המתמטיקה והתחלתי ללוות תלמידים גם בפסיכומטרי. אם יש משהו אחד שלמדתי מהדרך שלי ומהתלמידים שלימדו אותי, זה שאין שיטות קסם ואין קיצורי דרך. השיטה היחידה שעובדת באמת היא עבודה קשה, עקבית ומותאמת אישית. ההבדל הוא רק אם עובדים קשה "על עיוור", או עובדים קשה ונכון – עם אסטרטגיה מדויקת, תחקור טעויות ובניית הרגלים נכונים.',
     ],
@@ -453,10 +453,10 @@ const CONFIG = {
     consult: [
       'רוצה להבין בדיוק מה התוצאות שלך אומרות ואיך להתחיל לעבוד? אני מזמין אותך לשיחת ייעוץ ואבחון של רבע שעה איתי – בחינם לגמרי.',
       'בשיחה נעבור יחד על הציון והסימולציה שלך, נמפה את נקודות התורפה, ונבנה מפת דרכים ברורה שתראה לך בדיוק מה יידרש ממך כדי להגיע ליעד.',
-      'ואם יהיה מתאים להמשיך יחד, נדבר גם על מסגרת הליווי ועל המחיר. בלי לחץ ובלי התחייבות.',
+      'ואם יהיה מתאים להמשיך יחד: שיעור פרטי של 60 דקות עולה 150 ₪, ב-Google Meet או אצלי בצפת. בלי לחץ ובלי התחייבות.',
     ],
-    // משפט קצר על הליווי (דף הבית, ליד יצירת קשר). אפשר להוסיף כאן פורמט/מחיר כשתרצה.
-    howItWorks: 'בשיחת הייעוץ (חינם, רבע שעה) נעבור על התוצאות, ונדבר גם על מסגרת הליווי ועל המחיר.',
+    // משפט קצר על הליווי (דף הבית, ליד יצירת קשר)
+    howItWorks: 'בשיחת הייעוץ (חינם, רבע שעה) נעבור על התוצאות ונבנה תוכנית. שיעור פרטי: 60 דקות, 150 ₪, ב-Google Meet או אצלי בצפת.',
   },
   // הטופס "רוצה שאחזור אליך?" שולח ל-Google Form "פניות מהאבחון" (התגובות בגיליון "פניות מהאבחון - תגובות", ומייל על כל תגובה).
   // url ריק = הטופס לא מוצג באתר. המספרים הם מזהי השדות בטופס (entry.XXX).
@@ -465,10 +465,12 @@ const CONFIG = {
     fields: {name: 338451258, phone: 454271998, email: 929502395, results: 211868837, code: 629827510},
   },
   // ספירה אנונימית (בלי שם, תשובות או מזהה) ל-Google Form "ספירת מבקרים באבחון": הסיכום בלשונית "תגובות" בטופס
+  // מחירון (דף הבית): שיעור פרטי ושיחת ייעוץ
+  lessons: {price: 150, minutes: 60, where: 'ב-Google Meet או אצלי בצפת'},
   // בדיקת חיבור בתשלום (עמוד #essay): התשלום מראש בביט למספר של המורה, והחיבור נשלח לטופס "פניות מהאבחון" (מסומן "📝 בדיקת חיבור")
   // uploadUrl: כתובת ה-Web App של src/essay_upload.gs (שומר קבצים ב-Drive). ריק = אין אפשרות לצרף קובץ או תמונה
   // free: true = תקופת הרצה, בדיקה חינם בלי תשלום (המחיר מוצג כ"בקרוב"). false = תשלום מראש בביט
-  essayService: {price: 49, days: 3, free: true, uploadUrl: ''},
+  essayService: {price: 49, days: 3, free: false, uploadUrl: ''},
   // srcField: מזהה שדה "מקור" (תשובה קצרה) בטופס, אם הוסף. null = לא נשלח מקור
   statsForm: {url: 'https://docs.google.com/forms/d/e/1FAIpQLSc8N6M92-OUfN0L-QYKY14gxz8zNJ7-7FoM0aeNhvPi8ZCkpg/formResponse', field: 199736074, srcField: null},
   // מזהה TikTok Pixel (מ-TikTok Ads Manager ← Events). נטען רק למי שהגיע מפרסומת (ttclid או utm_medium=paid). ריק = כבוי
@@ -1034,6 +1036,12 @@ function renderHome() {
           <li>המבחן נשמר אוטומטית. בין פרק לפרק הזמן עוצר, ואפשר לחזור מאוחר יותר.</li>
         </ul>
       </div>
+      <div class="card prices"><h3>💰 מחירים נוחים לכל כיס</h3>
+        <p class="sub" style="margin:6px 0 10px">בלי קורס של אלפי שקלים: משלמים רק על מה שצריך.</p>
+        <div class="secline"><span><b>שיחת ייעוץ</b> · רבע שעה</span><span class="price-tag">חינם</span></div>
+        <div class="secline"><span><b>שיעור פרטי</b> · ${CONFIG.lessons.minutes} דקות</span><span class="price-tag">${CONFIG.lessons.price} ₪</span></div>
+        <div class="secline"><span><b>בדיקת חיבור אישית</b></span><span class="price-tag">${essayPrice()}</span></div>
+        <p class="muted" style="margin:10px 0 0">📍 השיעורים ${esc(CONFIG.lessons.where)}.</p></div>
       <a class="card eo-promo" href="#essay"><span class="pill">📝 חדש · ${essayPrice()}</span>
         <h3>בדיקת חיבור אישית</h3>
         <p class="sub">כותבים חיבור על נושא שבחרתם, ואני בודק אותו בעצמי: ציון משוער, הערות מפורטות ו-3 דברים לשפר. המשוב מגיע במייל תוך ${CONFIG.essayService.days} ימי עסקים, ואחריו הווטסאפ שלי פתוח לכל שאלה.</p>
