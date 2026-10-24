@@ -235,6 +235,10 @@ details.qd .body .stem{font-size:16px}
 .kv{display:grid;grid-template-columns:auto 1fr;gap:4px 14px;font-size:15px}
 .kv dt{color:var(--ink-2)} .kv dd{margin:0;font-weight:700}
 .essay-text{white-space:pre-wrap;background:var(--surface-2);border:1px solid var(--line);border-radius:10px;padding:14px;font-size:16px;line-height:1.8;max-height:420px;overflow:auto}
+.eo{display:grid;gap:18px;padding-top:18px;padding-bottom:28px;max-width:860px}.eo h1{font-size:clamp(26px,6vw,36px);margin:0}
+.eo-get,.eo-steps{margin:0;padding-inline-start:22px;line-height:1.9}.eo-steps li{margin-bottom:8px}
+.eo-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}@media(max-width:640px){.eo-grid{grid-template-columns:1fr}}
+.eo-promo{display:block;color:inherit;text-decoration:none;border-color:var(--accent)}.eo-promo h3{margin:10px 0 6px}.eo-more{font-weight:700;color:var(--accent)}
 .inapp{margin-top:14px;border-color:var(--quant)}.inapp p{margin:0 0 10px;line-height:1.6}
 .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--chip);color:var(--chip-ink);padding:10px 18px;border-radius:999px;z-index:99;font-weight:700}
 .hide{display:none!important}
@@ -451,6 +455,8 @@ const CONFIG = {
     fields: {name: 338451258, phone: 454271998, email: 929502395, results: 211868837, code: 629827510},
   },
   // ספירה אנונימית (בלי שם, תשובות או מזהה) ל-Google Form "ספירת מבקרים באבחון": הסיכום בלשונית "תגובות" בטופס
+  // בדיקת חיבור בתשלום (עמוד #essay): התשלום מראש בביט למספר של המורה, והחיבור נשלח לטופס "פניות מהאבחון" (מסומן "📝 בדיקת חיבור")
+  essayService: {price: 49, days: 3},
   // srcField: מזהה שדה "מקור" (תשובה קצרה) בטופס, אם הוסף. null = לא נשלח מקור
   statsForm: {url: 'https://docs.google.com/forms/d/e/1FAIpQLSc8N6M92-OUfN0L-QYKY14gxz8zNJ7-7FoM0aeNhvPi8ZCkpg/formResponse', field: 199736074, srcField: null},
   // מזהה TikTok Pixel (מ-TikTok Ads Manager ← Events). נטען רק למי שהגיע מפרסומת (ttclid או utm_medium=paid). ריק = כבוי
@@ -510,9 +516,9 @@ function interp(points, x) {
   return points[points.length - 1][1];
 }
 // ספירה אנונימית: רק שם האירוע נשלח. לא נספר בבדיקות מקומיות ולא בכניסת מורה
-const TRACK = {visit: 'כניסה', start: 'התחלת מבחן', phase0: 'סיום פרק 1', phase1: 'סיום פרק 2', phase2: 'סיום פרק 3', finish: 'סיום מבחן', lead: 'השאיר פרטים', wa: 'לחיצה על וואטסאפ'};
+const TRACK = {visit: 'כניסה', start: 'התחלת מבחן', phase0: 'סיום פרק 1', phase1: 'סיום פרק 2', phase2: 'סיום פרק 3', finish: 'סיום מבחן', lead: 'השאיר פרטים', wa: 'לחיצה על וואטסאפ', essay: 'הזמנת בדיקת חיבור'};
 // אירועי TikTok Pixel (אירועים סטנדרטיים, לאופטימיזציה של הקמפיין)
-const PIXEL_EV = {start: 'ClickButton', finish: 'CompleteRegistration', lead: 'SubmitForm', wa: 'Contact'};
+const PIXEL_EV = {start: 'ClickButton', finish: 'CompleteRegistration', lead: 'SubmitForm', wa: 'Contact', essay: 'PlaceAnOrder'};
 // דפדפן פנימי של אפליקציה (טיקטוק, אינסטגרם, פייסבוק)
 const INAPP = /musical_ly|Bytedance|TikTok|Instagram|FBAN|FBAV/i.test(navigator.userAgent);
 // מקור הכניסה: utm_source/utm_medium מהקישור, או ttclid (טיקטוק מוסיף אותו לכל לחיצה על מודעה). נזכר במכשיר, כדי שגם המשך המבחן ייספר לאותו מקור
@@ -637,13 +643,14 @@ function legalDoc(kind) {
       <h3>אין קשר למרכז הארצי לבחינות ולהערכה</h3><p>המבחן אינו של המרכז הארצי לבחינות ולהערכה (מאל"ו), אינו מאושר על ידו ואינו קשור אליו. השאלות הן שאלות תרגול שנכתבו בסגנון הבחינה.</p>
       <h3>הציונים הם הערכה בלבד</h3><p>הציונים, הפוטנציאל, הערכת החיבור וההמלצות מבוססים על פרק אחד מכל תחום ועל נוסחת המרה משוערת. הם נועדו לתת תמונת מצב כללית, ואינם מנבאים ואינם מבטיחים ציון בבחינה האמיתית. אין להסתמך עליהם לצורך החלטות מהותיות (כמו הרשמה ללימודים) בלי בדיקה נוספת.</p>
       <h3>אין התחייבות לתוצאה</h3><p>שיחת הייעוץ והליווי אינם מבטיחים שיפור בציון או השגת ציון יעד. התוצאה תלויה גם בעבודה ובהתמדה של כל תלמיד/ה.</p>
+      <h3>בדיקת חיבור בתשלום</h3><p>בדיקת חיבור אישית עולה ${CONFIG.essayService.price} ₪, והתשלום הוא מראש בביט. אחרי שאראה את ההעברה, המשוב יישלח לאימייל שמסרת תוך ${CONFIG.essayService.days} ימי עסקים. אם לא אמצא את ההעברה, אפנה אליך בטלפון שמסרת. אפשר לבטל ולקבל החזר מלא כל עוד לא התחלתי לבדוק, בפנייה ל-${ph}. הציון בבדיקה הוא הערכה מקצועית שלי, ולא ציון רשמי של הבחינה.</p>
       <h3>קניין רוחני</h3><p>כל הזכויות שמורות למפעיל. השאלות, ההסברים, הדוחות, העיצוב, הקוד וכל תוכן אחר במבחן הם קניינו הרוחני של המפעיל. מותר להשתמש בהם לצורך אישי בלבד, לשם ביצוע המבחן וקריאת הדוח. אין להעתיק, לשכפל, לצלם, להפיץ, לפרסם, למכור, לתרגם או לעשות כל שימוש מסחרי בתוכן, כולו או חלקו, ללא אישור מראש ובכתב מהמפעיל.</p>
       <h3>קטינים</h3><p>אם גילך מתחת ל-18, מומלץ להשתמש במבחן ולפנות לשיחת ייעוץ בידיעת הורה או אפוטרופוס. אישור לקבלת עדכונים והצעות ניתן רק מגיל 18, או בהסכמת הורה.</p>
       <h3>קישורים חיצוניים</h3><p>בדוח יש קישורים לטיקטוק, לווטסאפ ולשירותים חיצוניים אחרים. השימוש בהם כפוף לתנאים ולמדיניות הפרטיות שלהם.</p>
       <h3>הגבלת אחריות</h3><p>המבחן ניתן כמו שהוא (AS IS). המפעיל עושה מאמץ שהתוכן יהיה נכון ומדויק, אך ייתכנו טעויות, ולא תהיה לו אחריות לנזק שנגרם מהשימוש במבחן או מהסתמכות על תוצאותיו, ככל שהחוק מתיר.</p>
       <h3>דין וסמכות</h3><p>על התנאים חל הדין הישראלי. לשאלות: ${ph} · ${em}</p>`,
     privacy: `<h2>מדיניות פרטיות</h2><p class="muted">עודכן: ${LEGAL_UPDATED}</p>
-      <h3>איזה מידע נאסף</h3><ul><li>שם פרטי (או כינוי), וציון יעד (רשות)</li><li>התשובות, הזמן לכל שאלה והחיבור (אם נכתב)</li><li>אם בחרת בכך: הסכמה לקבל ממני עדכונים</li>${CONFIG.leadForm.url ? '<li>אם השארת בטופס "רוצה שאחזור אליך?": מספר טלפון, ואימייל אם הוספת</li>' : ''}</ul>
+      <h3>איזה מידע נאסף</h3><ul><li>שם פרטי (או כינוי), וציון יעד (רשות)</li><li>התשובות, הזמן לכל שאלה והחיבור (אם נכתב)</li><li>אם בחרת בכך: הסכמה לקבל ממני עדכונים</li>${CONFIG.leadForm.url ? '<li>אם השארת בטופס "רוצה שאחזור אליך?": מספר טלפון, ואימייל אם הוספת</li><li>אם שלחת חיבור לבדיקה: שם, אימייל, טלפון, השם בביט (אם מסרת), נושא החיבור והחיבור עצמו. הם נשלחים דרך Google Forms ונשמרים בגיליון פרטי שלי, כדי לבדוק את החיבור ולשלוח לך משוב</li>' : ''}</ul>
       <p>לא נאספים מספר תעודת זהות, כתובת, פרטי תשלום או מידע רפואי. ${CONFIG.tiktokPixel ? 'למי שנכנס דרך פרסומת בטיקטוק, נטען כלי המדידה של TikTok (TikTok Pixel). הוא משתמש בעוגיות (Cookies) ומדווח לטיקטוק על פעולות באתר (כניסה, התחלת המבחן, סיום, פנייה והשארת פרטים) כדי למדוד את הפרסום, לפי <a href="https://www.tiktok.com/legal/privacy-policy" target="_blank" rel="noopener">מדיניות הפרטיות של TikTok</a>. השם, התשובות והפרטים שמסרת לא נשלחים אליו. מלבד זה' : 'אין במבחן עוגיות (Cookies), פרסום או כלי מעקב של צד שלישי.'} נספרת ספירה אנונימית של כניסות, התחלות, סיום פרקים, סיומים ופניות (דרך Google Forms), יחד עם המקור שממנו הגעת (למשל פרסומת בטיקטוק), בלי שם, בלי תשובות ובלי שום פרט מזהה.</p>
       <p>אין חובה חוקית למסור את המידע. בלי שם לא ניתן להתחיל את המבחן, ואפשר להשתמש בכינוי. האתר מאוחסן ב-GitHub Pages, שעשוי לתעד כתובות IP ונתוני גלישה טכניים לצורכי אבטחה, לפי מדיניות הפרטיות של GitHub.</p>
       <h3>איפה המידע נשמר</h3><p>המידע נשמר <b>במכשיר שלך</b> (בזיכרון הדפדפן), כדי שתוכל/י להמשיך מאותה נקודה ולראות את הדוח. הוא לא נשלח לשום שרת${CONFIG.leadForm.url ? ', אלא אם בחרת לשלוח אותו כמתואר למטה' : ''}.</p>
@@ -684,7 +691,7 @@ function contactText() {
 }
 function siteFooter() {
   return `<footer class="site-foot"><nav aria-label="קישורים כלליים">
-      <a href="#" data-act="contact">יצירת קשר</a><a href="#" data-act="doc" data-v="terms">תנאי שימוש</a>
+      <a href="#" data-act="contact">יצירת קשר</a><a href="#essay">בדיקת חיבור</a><a href="#" data-act="doc" data-v="terms">תנאי שימוש</a>
       <a href="#" data-act="doc" data-v="privacy">מדיניות פרטיות</a><a href="#" data-act="doc" data-v="a11y">הצהרת נגישות</a>
       <a href="${tiktokLink()}" target="_blank" rel="noopener">טיקטוק</a>${CONFIG.instagram ? `<a href="${instaLink()}" target="_blank" rel="noopener">אינסטגרם</a>` : ''}</nav>
     © ${new Date().getFullYear()} ${esc(CONFIG.teacherFullName)} · ${esc(CONFIG.teacherTitle)} · כל הזכויות שמורות<br>
@@ -879,7 +886,7 @@ function estimateEssay(text, prompt) {
 /* ───────────────────────── מצב המבחן ───────────────────────── */
 let S = lsGet(STORE, null);
 let atHome = false, setupName = null, pane = 'q', lastPassage = null;
-let view = {tab: 'student', teacher: false, record: null, demo: location.hash === '#demo'};
+let view = {tab: 'student', teacher: false, record: null, demo: location.hash === '#demo', essay: location.hash === '#essay'};
 function save() { lsSet(STORE, S); }
 function newState(o) {
   return {v: 1, id: 'r' + Date.now().toString(36), name: o.name, target: o.target || '', mode: o.mode, withEssay: o.withEssay, optin: !!o.optin,
@@ -931,6 +938,7 @@ function render() {
   $('#a11y-btn')?.classList.remove('has-sticky');
   if (view.teacher) { stopTicker(); app.innerHTML = view.record ? renderReport(view.record, true) : renderTeacherHome(); afterRender(); return; }
   if (view.demo) { stopTicker(); app.innerHTML = renderReport(demoRecord(), false); afterRender(); return; }
+  if (view.essay) { stopTicker(); app.innerHTML = renderEssayCheck(); return; }
   if (setupName && !S) { stopTicker(); app.innerHTML = renderSetup(); window.scrollTo(0, 0); return; }
   if (!S || atHome) { stopTicker(); app.innerHTML = renderHome(); reveal(); startHello(); return; }
   if (S.stage === 'done') { stopTicker(); const r = lsGet(HIST, []).find(x => x.id === S.id) || buildRecord(); app.innerHTML = renderReport(r, false); afterRender(); return; }
@@ -1007,6 +1015,10 @@ function renderHome() {
           <li>המבחן נשמר אוטומטית. בין פרק לפרק הזמן עוצר, ואפשר לחזור מאוחר יותר.</li>
         </ul>
       </div>
+      <a class="card eo-promo" href="#essay"><span class="pill">📝 חדש · ${CONFIG.essayService.price} ₪</span>
+        <h3>בדיקת חיבור אישית</h3>
+        <p class="sub">כותבים חיבור על נושא שבחרתם, ואני בודק אותו בעצמי: ציון משוער, הערות מפורטות ו-3 דברים לשפר. המשוב מגיע במייל תוך ${CONFIG.essayService.days} ימי עסקים, ואחריו הווטסאפ שלי פתוח לכל שאלה.</p>
+        <span class="eo-more">לפרטים ולשליחת חיבור ←</span></a>
     </div>
   </div>
   <div class="stack" style="margin-top:24px">
@@ -1413,6 +1425,79 @@ function videoCard(an) {
     <div class="vids">${list.map(row).join('')}</div>
     <p class="muted" style="margin:10px 0 0">גם במפת התשובות למטה: כל טעות עם ▶ פותחת את הסרטון שלה. ועוד הסברים ב-<a href="${tiktokLink()}" target="_blank" rel="noopener">@${esc(CONFIG.tiktok)}</a></p></div>`;
 }
+/* ───────────────────────── בדיקת חיבור בתשלום (#essay) ───────────────────────── */
+const EORDER = 'psy_essay_order_v1';
+const wordCount = s => (s || '').trim().split(/\s+/).filter(Boolean).length;
+function renderEssayCheck() {
+  const E = CONFIG.essayService, o = lsGet(EORDER, {}), v = k => esc(o[k] || '');
+  const back = `<p style="margin:0"><a href="#" data-act="essay-exit">→ חזרה לדף הבית</a></p>`;
+  if (o.sentAt) return `${brandBar()}<div class="wrap eo">${back}
+    <div class="card stack"><span class="pill">📝 בדיקת חיבור</span><h2>קיבלתי את החיבור, תודה ${v('name')}!</h2>
+      <div class="ins good"><b>מה עכשיו?</b> ברגע שאראה את ההעברה בביט אתחיל לבדוק, והמשוב יגיע ל-<bdi dir="ltr">${v('email')}</bdi> תוך ${E.days} ימי עסקים.</div>
+      <p class="sub">ובינתיים, וגם אחרי המשוב: כל שאלה על החיבור, על ההערות או על כל דבר אחר בדרך, הווטסאפ שלי פתוח. באהבה ובכיף 🙂</p>
+      <p class="sub" style="margin:0">רוצים לוודא שהחיבור הגיע? שלחו לי הודעת אישור קצרה:</p>
+      <div class="row"><a class="btn wa" href="${waLink(`היי ${CONFIG.teacherName}, שלחתי חיבור לבדיקה באתר והעברתי ${E.price} ₪ בביט${o.bitName ? ' (השם בביט: ' + o.bitName + ')' : ''}. השם שלי: ${o.name || ''}`)}" target="_blank" rel="noopener">${ICON.wa}אישור בווטסאפ</a><button class="btn" data-act="essay-new">לשלוח חיבור נוסף</button></div></div>
+  </div>${siteFooter()}`;
+  return `${brandBar()}<div class="wrap eo">${back}
+  <section class="card stack">
+    <span class="pill">📝 בדיקת חיבור אישית · ${E.price} ₪</span>
+    <h1>כותבים חיבור, ואני בודק אותו אישית</h1>
+    <p class="lead">לא מחשב ולא תבנית: אני קורא את החיבור שלך מילה במילה, ומחזיר משוב כמו שבודקים בבחינה.</p>
+    <ul class="eo-get">
+      <li><b>ציון משוער</b> לפי שני הממדים של הבחינה: תוכן ומבנה, ולשון</li>
+      <li><b>הערות מפורטות</b> על הטיעון, המבנה, הניסוח והשגיאות</li>
+      <li><b>3 דברים לשפר</b> כבר בחיבור הבא</li>
+      <li>הכול <b>במייל, תוך ${E.days} ימי עסקים</b></li>
+    </ul>
+    <div class="ins info"><b>וזה לא נגמר במשוב.</b> אחרי הבדיקה הווטסאפ שלי פתוח לכל שאלה: על ההערות, על החיבור הבא או על כל דבר אחר בדרך. באהבה ובכיף.</div>
+  </section>
+  <section class="card stack" id="eo-form">
+    <h2>איך זה עובד</h2>
+    <ol class="eo-steps">
+      <li><b>כותבים חיבור</b> על נושא שבחרתם. כדאי לכתוב כמו בבחינה: 30 דקות, בלי עזרה, בערך 25 עד 50 שורות.</li>
+      <li><b>מעבירים ${E.price} ₪ בביט</b> למספר <bdi dir="ltr" class="ltr"><b>${esc(CONFIG.phoneDisplay)}</b></bdi> <button class="btn small" data-act="eo-copy">העתקה</button><br><span class="sub">בהערה בביט כתבו "חיבור" ואת השם שלכם.</span></li>
+      <li><b>שולחים כאן</b> את הנושא ואת החיבור.</li>
+    </ol>
+    <div class="eo-grid">
+      <div class="field"><label for="eo-name">שם</label><input id="eo-name" autocomplete="given-name" value="${v('name')}"></div>
+      <div class="field"><label for="eo-email">אימייל (לשם יישלח המשוב)</label><input id="eo-email" type="email" inputmode="email" autocomplete="email" dir="ltr" value="${v('email')}"></div>
+      <div class="field"><label for="eo-phone">טלפון</label><input id="eo-phone" type="tel" inputmode="tel" autocomplete="tel" dir="ltr" placeholder="050-0000000" value="${v('phone')}"></div>
+      <div class="field"><label for="eo-bitName">שם בביט (אם שילם מישהו אחר, למשל הורה)</label><input id="eo-bitName" value="${v('bitName')}"></div>
+    </div>
+    <div class="field"><label for="eo-topic">נושא החיבור (העתיקו את ההנחיה)</label><textarea id="eo-topic" class="essay-box" style="min-height:90px" placeholder="למשל: יש הטוענים כי... מהי עמדתכם? נמקו.">${v('topic')}</textarea></div>
+    <div class="field"><label for="eo-essay">החיבור <span class="sub" id="eo-wc">${wordCount(o.essay)} מילים</span></label><textarea id="eo-essay" class="essay-box" placeholder="הדביקו או כתבו כאן את החיבור. Enter בין פסקה לפסקה." spellcheck="false">${v('essay')}</textarea></div>
+    <p class="muted" style="margin:0">הטיוטה נשמרת אוטומטית במכשיר שלך, אפשר לסגור ולחזור.</p>
+    <label class="consent"><input type="checkbox" id="eo-paid" ${o.paid ? 'checked' : ''}><span>העברתי ${E.price} ₪ בביט למספר ${esc(CONFIG.phoneDisplay)}</span></label>
+    <label class="consent"><input type="checkbox" id="eo-terms" ${o.terms ? 'checked' : ''}><span>קראתי ואני מסכים/ה ל<a href="#" data-act="doc" data-v="terms">תנאי השימוש</a> ול<a href="#" data-act="doc" data-v="privacy">מדיניות הפרטיות</a></span></label>
+    <div><button class="btn primary big" data-act="eo-send">שליחת החיבור לבדיקה</button></div>
+  </section>
+  </div>${siteFooter()}`;
+}
+async function sendEssayOrder() {
+  const val = id => ($('#eo-' + id)?.value || '').trim(), E = CONFIG.essayService, F = CONFIG.leadForm.fields;
+  const name = val('name'), email = val('email'), phone = val('phone').replace(/[^\d+]/g, ''), bitName = val('bitName'), topic = val('topic');
+  const essay = ($('#eo-essay')?.value || '').trim(), words = wordCount(essay);
+  const fail = (msg, id) => { toast(msg); $('#eo-' + id)?.focus(); };
+  if (!name) return fail('נא לכתוב שם', 'name');
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return fail('נא להזין אימייל תקין, לשם יישלח המשוב', 'email');
+  if (!/^(\+?972|0)5\d{8}$/.test(phone)) return fail('נא להזין מספר נייד תקין', 'phone');
+  if (topic.length < 10) return fail('נא להעתיק את נושא החיבור', 'topic');
+  if (words < 120) return fail(`החיבור קצר מדי (${words} מילים). חיבור בבחינה הוא בדרך כלל 300 מילים ומעלה`, 'essay');
+  if (essay.length > 15000) return fail('החיבור ארוך מדי', 'essay');
+  if (!$('#eo-paid')?.checked) return fail(`התשלום (${E.price} ₪ בביט) הוא לפני הבדיקה. סמנו אחרי ההעברה`, 'paid');
+  if (!$('#eo-terms')?.checked) return fail('יש לאשר את תנאי השימוש', 'terms');
+  const results = `📝 בדיקת חיבור · ${E.price} ₪ בביט${bitName ? ' (שם בביט: ' + bitName + ')' : ''} · ${words} מילים · נושא: ${topic.slice(0, 1500)}`;
+  // פסקאות מסומנות ב-¶, כדי שיישארו ברורות גם אם הטופס מאחד שורות
+  const text = essay.split(/\n\s*\n|\n/).map(p => p.trim()).filter(Boolean).map(p => '¶ ' + p).join('\n');
+  const body = new URLSearchParams({['entry.' + F.name]: name, ['entry.' + F.phone]: phone, ['entry.' + F.email]: email, ['entry.' + F.results]: results, ['entry.' + F.code]: text});
+  const btn = $('[data-act=eo-send]'); if (btn) btn.disabled = true;
+  try {
+    await fetch(CONFIG.leadForm.url, {method: 'POST', mode: 'no-cors', body});
+    lsSet(EORDER, {name, email, phone, bitName, sentAt: new Date().toISOString()}); // החיבור עצמו לא נשאר במכשיר אחרי השליחה
+    track('essay'); render(); window.scrollTo(0, 0);
+  } catch (e) { if (btn) btn.disabled = false; toast('השליחה לא הצליחה. בדקו את החיבור לאינטרנט ונסו שוב, או שלחו לי בווטסאפ'); }
+}
+
 // "רוצה שאחזור אליך?": טלפון (+ מייל רשות) והתוצאות נשלחים ל-Google Form של המורה (רק אם הוגדר CONFIG.leadForm.url, ורק בלחיצה)
 function leadCard(r) {
   if (!CONFIG.leadForm.url || view.demo) return '';
@@ -1614,7 +1699,7 @@ function studentReport(r, an, teacher) {
     ${an.essay.human ? '<div class="muted" style="margin-top:6px">נבדק על ידי המורה ✓</div>' : '<div class="muted" style="margin-top:6px">הערכה אוטומטית גסה. ציון מדויק נותנת רק בדיקה אנושית.</div>'}</div>` : '';
   const strengths = an.strengths.slice(0, 5).map(s => `<span class="chip good">${esc(s.type)} · ${Math.round(s.pct * 100)}%</span>`).join('') || '<span class="sub">החוזקות יתגלו ככל שנתקדם. כל תחום אפשר לבנות.</span>';
   const gaps = an.gaps.slice(0, 3).map((x, i) => `<div class="gap"><span class="rank">${i + 1}</span><div><b>${esc(STUDENT_GAP[x.type] || x.type)}</b><div class="muted">${x.c}/${x.n} נכונות${x.easy ? ` · ${x.easy} מהטעויות בשאלות קלות או בינוניות` : ''}</div></div><span class="pts">+${x.gain} נק׳</span></div>`).join('');
-  const essayTips = an.essay ? `<div class="card"><h3>✍️ דגשים לחיבור</h3>${an.essay.est.tips.slice(0, 3).map(t => `<div class="ins info">${t.t}</div>`).join('') || '<p class="sub">חיבור מבוסס. בבדיקה אנושית נחדד את הניסוח והטיעון.</p>'}</div>` : '';
+  const essayTips = an.essay ? `<div class="card"><h3>✍️ דגשים לחיבור</h3>${an.essay.est.tips.slice(0, 3).map(t => `<div class="ins info">${t.t}</div>`).join('') || '<p class="sub">חיבור מבוסס. בבדיקה אנושית נחדד את הניסוח והטיעון.</p>'}${view.demo || view.teacher ? '' : `<p class="sub" style="margin:10px 0 0">רוצים שאבדוק חיבור אישית? <a href="#essay">📝 בדיקת חיבור ב-${CONFIG.essayService.price} ₪ ←</a></p>`}</div>` : '';
   const easyLostAll = Object.values(an.sections).reduce((t, A) => t + A.easyFix, 0);
   const hardLostAll = Object.values(an.sections).reduce((t, A) => t + A.items.filter(x => x.a && !x.ok && x.q.level === 3).length, 0);
   const partialNote = partial ? `<div class="card partial"><h3>⚠️ הציון חלקי</h3><p class="sub">לא הספקת לענות על רוב השאלות ב${an.partial.map(s => s.the).join(' וב')}. הציון כאן מושפע בעיקר מזה, ולא משקף את הידע שלך. בבחינה האמיתית תמיד מסמנים תשובה, גם ניחוש. ובשיחה נבין יחד מה קרה ואיך מנהלים את הזמן.</p></div>` : '';
@@ -1836,6 +1921,10 @@ document.addEventListener('click', async ev => {
       $('#start-form')?.scrollIntoView({behavior: 'smooth', block: 'start'}); setTimeout(() => $('#name')?.focus({preventScroll: true}), 450); break;
     case 'tst': modal(`<img class="tst-big" src="${CONFIG.testimonials[+v]}" alt="המלצה ${+v + 1}"><div class="row" style="margin-top:14px;justify-content:center"><button class="btn primary" data-act="close">סגירה</button></div>`); break;
     case 'contact': contactModal(); break;
+    case 'essay-exit': view.essay = false; history.replaceState(null, '', location.pathname); render(); window.scrollTo(0, 0); break;
+    case 'eo-copy': try { await navigator.clipboard.writeText(CONFIG.phoneDisplay.replace(/-/g, '')); toast('המספר הועתק'); } catch (e) { toast(CONFIG.phoneDisplay); } break;
+    case 'eo-send': sendEssayOrder(); break;
+    case 'essay-new': { const o = lsGet(EORDER, {}); lsSet(EORDER, {name: o.name, email: o.email, phone: o.phone, bitName: o.bitName}); render(); window.scrollTo(0, 0); break; }
     case 'inapp-ok': try { localStorage.setItem('psy_inapp_ok', '1'); } catch (e) {} render(); break;
     case 'inapp-copy': try { await navigator.clipboard.writeText(SITE_LINK); toast('הקישור הועתק. הדביקו אותו בכרום או בספארי'); } catch (e) { modal(`<h3>העתיקו את הקישור</h3><input value="${esc(SITE_LINK)}" dir="ltr" readonly onfocus="this.select()"><div class="row" style="margin-top:12px"><button class="btn" data-act="close">סגירה</button></div>`); } break;
     case 'c-wa': { const t = contactText(); if (t) openExt(waLink(t)); break; }
@@ -1929,7 +2018,17 @@ function teacherFromHash() {
 function openTeacherLogin() {
   modal(`<h2>כניסת מורה</h2><div class="field"><label for="pin">קוד</label><input id="pin" type="password" autocomplete="off" autocapitalize="off" spellcheck="false"></div><div class="row" style="margin-top:14px"><button class="btn primary" data-act="pin-ok">כניסה</button><button class="btn" data-act="close">ביטול</button></div>`);
 }
-window.addEventListener('hashchange', () => { const d = location.hash === '#demo'; if (d !== view.demo) { view.demo = d; render(); window.scrollTo(0, 0); } teacherFromHash(); });
+window.addEventListener('hashchange', () => {
+  const d = location.hash === '#demo', e = location.hash === '#essay';
+  if (d !== view.demo || e !== view.essay) { view.demo = d; view.essay = e; render(); window.scrollTo(0, 0); }
+  teacherFromHash();
+});
+// טיוטת בדיקת החיבור נשמרת בכל הקלדה, כדי שלא תאבד אם הדפדפן נסגר
+document.addEventListener('input', ev => {
+  if (!view.essay || !ev.target.closest('#eo-form')) return;
+  const o = lsGet(EORDER, {}); o[ev.target.id.slice(3)] = ev.target.type === 'checkbox' ? ev.target.checked : ev.target.value; lsSet(EORDER, o);
+  if (ev.target.id === 'eo-essay') $('#eo-wc').textContent = wordCount(ev.target.value) + ' מילים';
+});
 render();
 teacherFromHash();
 track('visit');
