@@ -242,7 +242,7 @@ details.qd .body .stem{font-size:16px}
 .eo{display:grid;gap:18px;padding-top:18px;padding-bottom:28px;max-width:860px}.eo h1{font-size:clamp(26px,6vw,36px);margin:0}
 .eo-get,.eo-steps{margin:0;padding-inline-start:22px;line-height:1.9}.eo-steps li{margin-bottom:8px}
 .eo-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}@media(max-width:640px){.eo-grid{grid-template-columns:1fr}}
-.eo [hidden]{display:none!important}
+.eo [hidden]{display:none!important}.eo-was{opacity:.6;margin-inline-start:4px}
 .eo-fs{border:1px solid var(--line);border-radius:12px;padding:12px 14px 14px;margin:0;display:grid;gap:10px;min-width:0}.eo-fs legend{font-weight:700;padding:0 6px}
 .eo-modes{display:flex;flex-wrap:wrap;gap:8px}.eo-mode{position:relative;cursor:pointer}.eo-mode input{position:absolute;opacity:0;inset:0;margin:0;cursor:pointer}
 .eo-mode span{display:inline-block;padding:7px 14px;border:1px solid var(--line-2);border-radius:999px;font-weight:600;font-size:15px}
@@ -467,7 +467,8 @@ const CONFIG = {
   // ספירה אנונימית (בלי שם, תשובות או מזהה) ל-Google Form "ספירת מבקרים באבחון": הסיכום בלשונית "תגובות" בטופס
   // בדיקת חיבור בתשלום (עמוד #essay): התשלום מראש בביט למספר של המורה, והחיבור נשלח לטופס "פניות מהאבחון" (מסומן "📝 בדיקת חיבור")
   // uploadUrl: כתובת ה-Web App של src/essay_upload.gs (שומר קבצים ב-Drive). ריק = אין אפשרות לצרף קובץ או תמונה
-  essayService: {price: 49, days: 3, uploadUrl: ''},
+  // free: true = תקופת הרצה, בדיקה חינם בלי תשלום (המחיר מוצג כ"בקרוב"). false = תשלום מראש בביט
+  essayService: {price: 49, days: 3, free: true, uploadUrl: ''},
   // srcField: מזהה שדה "מקור" (תשובה קצרה) בטופס, אם הוסף. null = לא נשלח מקור
   statsForm: {url: 'https://docs.google.com/forms/d/e/1FAIpQLSc8N6M92-OUfN0L-QYKY14gxz8zNJ7-7FoM0aeNhvPi8ZCkpg/formResponse', field: 199736074, srcField: null},
   // מזהה TikTok Pixel (מ-TikTok Ads Manager ← Events). נטען רק למי שהגיע מפרסומת (ttclid או utm_medium=paid). ריק = כבוי
@@ -654,14 +655,14 @@ function legalDoc(kind) {
       <h3>אין קשר למרכז הארצי לבחינות ולהערכה</h3><p>המבחן אינו של המרכז הארצי לבחינות ולהערכה (מאל"ו), אינו מאושר על ידו ואינו קשור אליו. השאלות הן שאלות תרגול שנכתבו בסגנון הבחינה.</p>
       <h3>הציונים הם הערכה בלבד</h3><p>הציונים, הפוטנציאל, הערכת החיבור וההמלצות מבוססים על פרק אחד מכל תחום ועל נוסחת המרה משוערת. הם נועדו לתת תמונת מצב כללית, ואינם מנבאים ואינם מבטיחים ציון בבחינה האמיתית. אין להסתמך עליהם לצורך החלטות מהותיות (כמו הרשמה ללימודים) בלי בדיקה נוספת.</p>
       <h3>אין התחייבות לתוצאה</h3><p>שיחת הייעוץ והליווי אינם מבטיחים שיפור בציון או השגת ציון יעד. התוצאה תלויה גם בעבודה ובהתמדה של כל תלמיד/ה.</p>
-      <h3>בדיקת חיבור בתשלום</h3>
+      <h3>בדיקת חיבור אישית</h3>
       <p><b>השירות.</b> בדיקה אישית של חיבור אחד ומשוב כתוב: ציון משוער, הערות ונקודות לשיפור. המשוב הוא חוות דעת מקצועית שלי. הוא אינו ציון רשמי, אינו מנבא את הציון בבחינה ואינו מבטיח שיפור או ציון מסוים.</p>
-      <p><b>תשלום.</b> המחיר הוא ${CONFIG.essayService.price} ₪ לחיבור, והתשלום הוא מראש בביט. הבדיקה מתחילה רק אחרי שההעברה התקבלה אצלי. אם לא אמצא העברה, אפנה אליך בטלפון שמסרת. אם התשלום לא יושלם תוך 7 ימים, הבקשה תבוטל והחומר יימחק.</p>
-      <p><b>זמן.</b> המשוב יישלח בדרך שבחרת (ווטסאפ ו/או מייל) תוך ${CONFIG.essayService.days} ימי עסקים מקבלת התשלום ומקבלת חומר תקין. במקרים חריגים (מחלה, חגים, תקלה) ייתכן עיכוב, ואעדכן אותך. אם העיכוב עולה על 7 ימי עסקים, אפשר לבקש החזר מלא.</p>
-      <p><b>ביטול והחזר.</b> אפשר לבטל ולקבל החזר מלא כל עוד לא התחלתי לבדוק, בפנייה ל-${ph}. אחרי שהמשוב נשלח, השירות ניתן במלואו. כל זה בכפוף לחוק הגנת הצרכן.</p>
+      ${CONFIG.essayService.free ? `<p><b>תקופת הרצה.</b> בתקופת ההרצה הבדיקה ניתנת בחינם, ללא תשלום וללא התחייבות, למספר מוגבל של חיבורים. אני רשאי לסיים את תקופת ההרצה בכל עת. חיבורים שנשלחו לפני כן ייבדקו בחינם, אלא אם הגעתי למספר החיבורים שאני יכול לבדוק, ואז אעדכן אותך.</p>` : `<p><b>תשלום.</b> המחיר הוא ${CONFIG.essayService.price} ₪ לחיבור, והתשלום הוא מראש בביט. הבדיקה מתחילה רק אחרי שההעברה התקבלה אצלי. אם לא אמצא העברה, אפנה אליך בטלפון שמסרת. אם התשלום לא יושלם תוך 7 ימים, הבקשה תבוטל והחומר יימחק.</p>`}
+      <p><b>זמן.</b> המשוב יישלח בדרך שבחרת (ווטסאפ ו/או מייל) תוך ${CONFIG.essayService.days} ימי עסקים מקבלת ${CONFIG.essayService.free ? 'החיבור' : 'התשלום ומקבלת חומר תקין'}. במקרים חריגים (מחלה, חגים, תקלה) ייתכן עיכוב, ואעדכן אותך. אם העיכוב עולה על 7 ימי עסקים, אפשר לבקש החזר מלא.</p>
+      ${CONFIG.essayService.free ? '' : `<p><b>ביטול והחזר.</b> אפשר לבטל ולקבל החזר מלא כל עוד לא התחלתי לבדוק, בפנייה ל-${ph}. אחרי שהמשוב נשלח, השירות ניתן במלואו. כל זה בכפוף לחוק הגנת הצרכן.</p>`}
       <p><b>החומר ששלחת.</b> החיבור נשאר שלך. בשליחה את/ה מצהיר/ה שכתבת אותו בעצמך ושמותר לך לשלוח אותו, ושאין בו תוכן פוגעני, בלתי חוקי או פרטים אישיים של אחרים. אני משתמש בו רק לצורך הבדיקה, ולא אפרסם אותו בלי הסכמתך. אני רשאי לסרב לבדוק חומר שאינו חיבור או שמפר את התנאים, ואז הכסף יוחזר.</p>
       <p><b>קבצים וקישורים.</b> האחריות לכך שהקובץ נפתח, שהכתב קריא ושהקישור משותף לצפייה היא של השולח. אם לא אצליח לפתוח את החומר אפנה אליך, והזמן ייספר מהרגע שקיבלתי חומר תקין.</p>
-      <p><b>הגבלת אחריות.</b> בכל מקרה, האחריות שלי בקשר לבדיקת החיבור מוגבלת לסכום ששולם עבורה. אין לי אחריות להחלטות שהתקבלו על סמך המשוב.</p>
+      <p><b>הגבלת אחריות.</b> ${CONFIG.essayService.free ? 'הבדיקה ניתנת כמו שהיא (AS IS), ואין לי אחריות להחלטות שהתקבלו על סמך המשוב.' : 'בכל מקרה, האחריות שלי בקשר לבדיקת החיבור מוגבלת לסכום ששולם עבורה. אין לי אחריות להחלטות שהתקבלו על סמך המשוב.'}</p>
       <h3>קניין רוחני</h3><p>כל הזכויות שמורות למפעיל. השאלות, ההסברים, הדוחות, העיצוב, הקוד וכל תוכן אחר במבחן הם קניינו הרוחני של המפעיל. מותר להשתמש בהם לצורך אישי בלבד, לשם ביצוע המבחן וקריאת הדוח. אין להעתיק, לשכפל, לצלם, להפיץ, לפרסם, למכור, לתרגם או לעשות כל שימוש מסחרי בתוכן, כולו או חלקו, ללא אישור מראש ובכתב מהמפעיל.</p>
       <h3>קטינים</h3><p>אם גילך מתחת ל-18, מומלץ להשתמש במבחן ולפנות לשיחת ייעוץ בידיעת הורה או אפוטרופוס. אישור לקבלת עדכונים והצעות ניתן רק מגיל 18, או בהסכמת הורה.</p>
       <h3>קישורים חיצוניים</h3><p>בדוח יש קישורים לטיקטוק, לווטסאפ ולשירותים חיצוניים אחרים. השימוש בהם כפוף לתנאים ולמדיניות הפרטיות שלהם.</p>
@@ -1033,7 +1034,7 @@ function renderHome() {
           <li>המבחן נשמר אוטומטית. בין פרק לפרק הזמן עוצר, ואפשר לחזור מאוחר יותר.</li>
         </ul>
       </div>
-      <a class="card eo-promo" href="#essay"><span class="pill">📝 חדש · ${CONFIG.essayService.price} ₪</span>
+      <a class="card eo-promo" href="#essay"><span class="pill">📝 חדש · ${essayPrice()}</span>
         <h3>בדיקת חיבור אישית</h3>
         <p class="sub">כותבים חיבור על נושא שבחרתם, ואני בודק אותו בעצמי: ציון משוער, הערות מפורטות ו-3 דברים לשפר. המשוב מגיע במייל תוך ${CONFIG.essayService.days} ימי עסקים, ואחריו הווטסאפ שלי פתוח לכל שאלה.</p>
         <span class="eo-more">לפרטים ולשליחת חיבור ←</span></a>
@@ -1449,6 +1450,7 @@ function videoCard(an) {
 }
 /* ───────────────────────── בדיקת חיבור בתשלום (#essay) ───────────────────────── */
 const EORDER = 'psy_essay_order_v1';
+const essayPrice = () => CONFIG.essayService.free ? 'חינם בתקופת ההרצה' : CONFIG.essayService.price + ' ₪';
 const wordCount = s => (s || '').trim().split(/\s+/).filter(Boolean).length;
 const DOCS_RE = /^https:\/\/(docs|drive)\.google\.com\/\S+$/;
 const MIME = {pdf: 'application/pdf', doc: 'application/msword', docx: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
@@ -1459,17 +1461,17 @@ function renderEssayCheck() {
   const via = (o.viaMail ? 'למייל' : '') + (o.viaMail && o.viaWa ? ' ו' : '') + (o.viaWa ? 'בווטסאפ' : '');
   if (o.sentAt) return `${brandBar()}<div class="wrap eo">${back}
     <div class="card stack"><span class="pill">📝 בדיקת חיבור</span><h2>קיבלתי את החיבור, תודה ${v('name')}!</h2>
-      <div class="ins good"><b>מה עכשיו?</b> ברגע שאראה את ההעברה בביט אתחיל לבדוק, והמשוב יגיע ${via || 'אליך'} תוך ${E.days} ימי עסקים.</div>
+      <div class="ins good"><b>מה עכשיו?</b> ${E.free ? 'אני מתחיל לבדוק' : 'ברגע שאראה את ההעברה בביט אתחיל לבדוק'}, והמשוב יגיע ${via || 'אליך'} תוך ${E.days} ימי עסקים.</div>
       <p class="sub">ובינתיים, וגם אחרי המשוב: כל שאלה על החיבור, על ההערות או על כל דבר אחר בדרך, הווטסאפ שלי פתוח. באהבה ובכיף 🙂</p>
       <p class="sub" style="margin:0">רוצים לוודא שהחיבור הגיע? שלחו לי הודעת אישור קצרה:</p>
-      <div class="row"><a class="btn wa" href="${waLink(`היי ${CONFIG.teacherName}, שלחתי חיבור לבדיקה באתר והעברתי ${E.price} ₪ בביט. השם שלי: ${o.name || ''}`)}" target="_blank" rel="noopener">${ICON.wa}אישור בווטסאפ</a><button class="btn" data-act="essay-new">לשלוח חיבור נוסף</button></div></div>
+      <div class="row"><a class="btn wa" href="${waLink(`היי ${CONFIG.teacherName}, שלחתי חיבור לבדיקה באתר${E.free ? '' : ` והעברתי ${E.price} ₪ בביט`}. השם שלי: ${o.name || ''}`)}" target="_blank" rel="noopener">${ICON.wa}אישור בווטסאפ</a><button class="btn" data-act="essay-new">לשלוח חיבור נוסף</button></div></div>
   </div>${siteFooter()}`;
   const tmode = up && o.tmode === 'image' ? 'image' : 'text', emode = o.emode === 'docs' || (up && o.emode === 'file') ? o.emode : 'text';
   const radio = (name, val, cur, label) => `<label class="eo-mode"><input type="radio" name="eo-${name}" value="${val}" ${cur === val ? 'checked' : ''}><span>${label}</span></label>`;
   const pane = (name, val, cur, html) => `<div class="eo-pane" data-for="${name}" data-v="${val}" ${cur === val ? '' : 'hidden'}>${html}</div>`;
   return `${brandBar()}<div class="wrap eo">${back}
   <section class="card stack">
-    <span class="pill">📝 בדיקת חיבור אישית · ${E.price} ₪</span>
+    <span class="pill">📝 בדיקת חיבור אישית · ${E.free ? `חינם בתקופת ההרצה <s class="eo-was">${E.price} ₪</s>` : E.price + ' ₪'}</span>
     <h1>כותבים חיבור, ואני בודק אותו אישית</h1>
     <p class="lead">לא מחשב ולא תבנית: אני קורא את החיבור שלך מילה במילה, ומחזיר משוב כמו שבודקים בבחינה.</p>
     <ul class="eo-get">
@@ -1478,13 +1480,14 @@ function renderEssayCheck() {
       <li><b>3 דברים לשפר</b> כבר בחיבור הבא</li>
       <li>הכול <b>במייל או בווטסאפ, איך שנוח לך, תוך ${E.days} ימי עסקים</b></li>
     </ul>
+    ${E.free ? `<div class="ins good"><b>תקופת הרצה: הבדיקה בחינם.</b> אני פותח את השירות למספר מוגבל של חיבורים, בלי תשלום ובלי התחייבות. בקרוב המחיר יהיה ${E.price} ₪.</div>` : ''}
     <div class="ins info"><b>וזה לא נגמר במשוב.</b> אחרי הבדיקה הווטסאפ שלי פתוח לכל שאלה: על ההערות, על החיבור הבא או על כל דבר אחר בדרך. באהבה ובכיף.</div>
   </section>
   <section class="card stack" id="eo-form">
     <h2>איך זה עובד</h2>
     <ol class="eo-steps">
       <li><b>כותבים חיבור</b> על נושא שבחרתם. כדאי לכתוב כמו בבחינה: 30 דקות, בלי עזרה, בערך 25 עד 50 שורות.</li>
-      <li><b>מעבירים ${E.price} ₪ בביט</b> למספר <bdi dir="ltr" class="ltr"><b>${esc(CONFIG.phoneDisplay)}</b></bdi> <button class="btn small" data-act="eo-copy">העתקה</button><br><span class="sub">בהערה בביט כתבו "חיבור" ואת השם שלכם.</span></li>
+      ${E.free ? '' : `<li><b>מעבירים ${E.price} ₪ בביט</b> למספר <bdi dir="ltr" class="ltr"><b>${esc(CONFIG.phoneDisplay)}</b></bdi> <button class="btn small" data-act="eo-copy">העתקה</button><br><span class="sub">בהערה בביט כתבו "חיבור" ואת השם שלכם.</span></li>`}
       <li><b>שולחים כאן</b> את הנושא ואת החיבור${up ? ': בהקלדה, כקובץ או כקישור' : ': בהקלדה או כקישור ל-Google Docs'}.</li>
     </ol>
     <div class="eo-grid">
@@ -1510,7 +1513,7 @@ function renderEssayCheck() {
       ${up ? pane('emode', 'file', emode, `<label class="sr-only" for="eo-essayFile">קובץ החיבור</label><input id="eo-essayFile" type="file" multiple accept=".pdf,.doc,.docx,image/*"><p class="muted" style="margin:6px 0 0">קובץ Word או PDF, או עד 5 תמונות של דפים בכתב יד. ודאו שהכתב ברור ושהקובץ נפתח אצלכם.</p>`) : ''}
     </fieldset>
     <p class="muted" style="margin:0">הטקסט שהקלדתם נשמר אוטומטית במכשיר, אפשר לסגור ולחזור. קבצים צריך לבחור מחדש.</p>
-    <label class="consent"><input type="checkbox" id="eo-paid" ${o.paid ? 'checked' : ''}><span>העברתי ${E.price} ₪ בביט למספר <bdi dir="ltr">${esc(CONFIG.phoneDisplay)}</bdi></span></label>
+    ${E.free ? '' : `<label class="consent"><input type="checkbox" id="eo-paid" ${o.paid ? 'checked' : ''}><span>העברתי ${E.price} ₪ בביט למספר <bdi dir="ltr">${esc(CONFIG.phoneDisplay)}</bdi></span></label>`}
     <label class="consent"><input type="checkbox" id="eo-terms" ${o.terms ? 'checked' : ''}><span>קראתי ואני מסכים/ה ל<a href="#" data-act="doc" data-v="terms">תנאי השימוש</a> (כולל התנאים של בדיקת החיבור) ול<a href="#" data-act="doc" data-v="privacy">מדיניות הפרטיות</a>. החיבור נכתב על ידי.</span></label>
     <div><button class="btn primary big" data-act="eo-send">שליחת החיבור לבדיקה</button></div>
   </section>
@@ -1564,7 +1567,7 @@ async function sendEssayOrder() {
   if (emode === 'docs' && !on('docsOk')) return fail('נא לוודא שהקישור פתוח לצפייה ולסמן', 'docsOk');
   if (emode === 'file' && !essayFiles.length) return fail('נא לצרף את קובץ החיבור', 'essayFile');
   if (emode === 'file' && essayFiles.length > 5) return fail('אפשר לצרף עד 5 קבצים', 'essayFile');
-  if (!on('paid')) return fail(`התשלום (${E.price} ₪ בביט) הוא לפני הבדיקה. סמנו אחרי ההעברה`, 'paid');
+  if (!E.free && !on('paid')) return fail(`התשלום (${E.price} ₪ בביט) הוא לפני הבדיקה. סמנו אחרי ההעברה`, 'paid');
   if (!on('terms')) return fail('יש לאשר את תנאי השימוש', 'terms');
   const btn = $('[data-act=eo-send]'); if (btn) { btn.disabled = true; btn.textContent = 'שולח...'; }
   const restore = () => { if (btn) { btn.disabled = false; btn.textContent = 'שליחת החיבור לבדיקה'; } };
@@ -1576,7 +1579,7 @@ async function sendEssayOrder() {
       catch (e) { restore(); toast((e.message && /[א-ת]/.test(e.message) ? e.message : 'ההעלאה לא הצליחה') + '. אפשר גם להקליד או לשלוח קישור'); return; }
     }
     const link = role => up.links.filter(l => l.role === role).map(l => l.url).join(' ');
-    const results = `📝 בדיקת חיבור · ${E.price} ₪ בביט · משוב ב: ${[viaWa && 'וואטסאפ', viaMail && 'מייל'].filter(Boolean).join(' + ')}`
+    const results = `📝 בדיקת חיבור · ${E.free ? 'חינם (הרצה)' : E.price + ' ₪ בביט'} · משוב ב: ${[viaWa && 'וואטסאפ', viaMail && 'מייל'].filter(Boolean).join(' + ')}`
       + ` · חיבור: ${emode === 'text' ? `הקלדה (${words} מילים)` : emode === 'docs' ? 'Google Docs' : 'קובץ'}`
       + ` · נושא: ${tmode === 'image' ? 'בתמונה ' + link('נושא') : topic.slice(0, 1500)}`;
     // פסקאות מסומנות ב-¶, כדי שיישארו ברורות גם אם הטופס מאחד שורות
@@ -1808,7 +1811,7 @@ function studentReport(r, an, teacher) {
     ${an.essay.human ? '<div class="muted" style="margin-top:6px">נבדק על ידי המורה ✓</div>' : '<div class="muted" style="margin-top:6px">הערכה אוטומטית גסה. ציון מדויק נותנת רק בדיקה אנושית.</div>'}</div>` : '';
   const strengths = an.strengths.slice(0, 5).map(s => `<span class="chip good">${esc(s.type)} · ${Math.round(s.pct * 100)}%</span>`).join('') || '<span class="sub">החוזקות יתגלו ככל שנתקדם. כל תחום אפשר לבנות.</span>';
   const gaps = an.gaps.slice(0, 3).map((x, i) => `<div class="gap"><span class="rank">${i + 1}</span><div><b>${esc(STUDENT_GAP[x.type] || x.type)}</b><div class="muted">${x.c}/${x.n} נכונות${x.easy ? ` · ${x.easy} מהטעויות בשאלות קלות או בינוניות` : ''}</div></div><span class="pts">+${x.gain} נק׳</span></div>`).join('');
-  const essayTips = an.essay ? `<div class="card"><h3>✍️ דגשים לחיבור</h3>${an.essay.est.tips.slice(0, 3).map(t => `<div class="ins info">${t.t}</div>`).join('') || '<p class="sub">חיבור מבוסס. בבדיקה אנושית נחדד את הניסוח והטיעון.</p>'}${view.demo || view.teacher ? '' : `<p class="sub" style="margin:10px 0 0">רוצים שאבדוק חיבור אישית? <a href="#essay">📝 בדיקת חיבור ב-${CONFIG.essayService.price} ₪ ←</a></p>`}</div>` : '';
+  const essayTips = an.essay ? `<div class="card"><h3>✍️ דגשים לחיבור</h3>${an.essay.est.tips.slice(0, 3).map(t => `<div class="ins info">${t.t}</div>`).join('') || '<p class="sub">חיבור מבוסס. בבדיקה אנושית נחדד את הניסוח והטיעון.</p>'}${view.demo || view.teacher ? '' : `<p class="sub" style="margin:10px 0 0">רוצים שאבדוק חיבור אישית? <a href="#essay">📝 בדיקת חיבור אישית (${essayPrice()}) ←</a></p>`}</div>` : '';
   const easyLostAll = Object.values(an.sections).reduce((t, A) => t + A.easyFix, 0);
   const hardLostAll = Object.values(an.sections).reduce((t, A) => t + A.items.filter(x => x.a && !x.ok && x.q.level === 3).length, 0);
   const partialNote = partial ? `<div class="card partial"><h3>⚠️ הציון חלקי</h3><p class="sub">לא הספקת לענות על רוב השאלות ב${an.partial.map(s => s.the).join(' וב')}. הציון כאן מושפע בעיקר מזה, ולא משקף את הידע שלך. בבחינה האמיתית תמיד מסמנים תשובה, גם ניחוש. ובשיחה נבין יחד מה קרה ואיך מנהלים את הזמן.</p></div>` : '';
