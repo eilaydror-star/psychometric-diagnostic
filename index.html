@@ -1739,13 +1739,8 @@ function timeCard(an) {
     ${overT.length ? `<p class="sub">בתנאי אמת הציון המשוער הוא <b>${an.genTimed.multi}</b>. ניהול זמן הוא מיומנות שלומדים, והיא שווה הרבה נקודות.</p>` : ''}</div>`;
 }
 // מה המספר אומר: טווחים כלליים בלבד (הדרישות משתנות בין מוסדות ומשנה לשנה)
-const SCORE_BANDS = [
-  [200, 549, 'עד ~550', 'פותח מכללות רבות וחלק מהחוגים באוניברסיטאות.'],
-  [550, 649, '~550–650', 'פותח רוב החוגים במדעי החברה והרוח באוניברסיטאות.'],
-  [650, 719, '~650–720', 'חוגים תחרותיים יותר, כמו משפטים, מדעי המחשב, הנדסה ופסיכולוגיה.'],
-  [720, 800, '720+', 'רפואה ותוכניות היוקרה.'],
-];
-const NATIONAL_AVG = {score: 574, year: 2025}; // ממוצע נבחני העברית, לפי דוח מאל"ו לשנה זו
+// עובדות מהדוח הסטטיסטי של מאל"ו לשנת 2025 (ממוצעי הציון הכללי)
+const NATIONAL_AVG = {score: 574, all: 554, first: 533, repeat: 577, repeatPct: 47, year: 2025};
 // מה נדרש כדי להגיע ליעד: לפי רמת היעד (מהנמוכה לגבוהה) ולפי גודל הפער
 const TARGET_TIERS = [
   [0, 'יסודות ושיטה: לסגור את הטעויות בשאלות הקלות והבינוניות, ולבנות שגרת תרגול קבועה.'],
@@ -1758,13 +1753,15 @@ const GAP_NOTE = gap => gap <= 0 ? 'כבר עכשיו את/ה ברמת היעד.
   : gap <= 150 ? `פער של ${gap} נקודות: בהחלט אפשרי, עם תוכנית מסודרת ועבודה עקבית.`
   : `פער של ${gap} נקודות: פער גדול, שדורש תוכנית ארוכה ועבודה עקבית. אפשרי, אבל לא בקיצורי דרך.`;
 function scoreMeaning(g, target) {
-  const inBand = (v, lo, hi) => v >= lo && v <= hi;
+  const N = NATIONAL_AVG, d = g - N.score;
   const tier = target ? TARGET_TIERS.filter(([min]) => target >= min).pop()[1] : '';
-  return `<div class="card"><h3>🎓 מה המספר הזה אומר?</h3>
-    <p class="sub" style="margin:6px 0 0">ממוצע הנבחנים בעברית ב-${NATIONAL_AVG.year} היה בערך <b>${NATIONAL_AVG.score}</b>. הציון המשוער שלך ${Math.abs(g - NATIONAL_AVG.score) < 15 ? 'קרוב לממוצע' : g > NATIONAL_AVG.score ? `גבוה ממנו בכ-${g - NATIONAL_AVG.score} נקודות` : `נמוך ממנו בכ-${NATIONAL_AVG.score - g} נקודות`}.</p>
-    <div class="bands">${SCORE_BANDS.map(([lo, hi, label, txt]) => `<div class="band ${inBand(g, lo, hi) ? 'on' : ''} ${target && inBand(target, lo, hi) ? 'goal' : ''}"><b><bdi dir="ltr">${label}</bdi></b><span>${txt}</span>${inBand(g, lo, hi) ? '<span class="tag">את/ה כאן</span>' : ''}${target && inBand(target, lo, hi) ? `<span class="tag goal">היעד שלך: ${target}</span>` : ''}</div>`).join('')}</div>
+  const fact = (v, label) => `<div class="kpi"><div class="k">${label}</div><div class="v">${v}</div></div>`;
+  return `<div class="card"><h3>📊 איפה זה ממקם אותך?</h3>
+    <p class="sub" style="margin:6px 0 0">ממוצע הנבחנים בעברית ב-${N.year} היה <b>${N.score}</b>. הציון המשוער שלך ${Math.abs(d) < 15 ? 'קרוב לממוצע' : d > 0 ? `גבוה ממנו בכ-${d} נקודות` : `נמוך ממנו בכ-${-d} נקודות`}.</p>
+    <div class="kpis" style="margin-top:12px;grid-template-columns:repeat(2,minmax(0,1fr))">${fact(N.score, 'ממוצע הנבחנים בעברית')}${fact(N.all, 'ממוצע כלל הנבחנים')}${fact(N.first, 'נבחנים בפעם הראשונה')}${fact(N.repeat, 'נבחנים חוזרים')}</div>
+    <div class="ins good"><b>הציון הוא לא גזירת גורל.</b> כמעט חצי מהנבחנים (${N.repeatPct}%) ניגשים יותר מפעם אחת, והממוצע של הנבחנים החוזרים גבוה בכ-${N.repeat - N.first} נקודות מהממוצע של מי שנבחן בפעם הראשונה.</div>
     ${target ? `<div class="ins info"><b>מה נדרש כדי להגיע ל-${target}</b>${GAP_NOTE(target - g)} ${tier}</div>` : ''}
-    <p class="muted" style="margin:10px 0 0">תמונה כללית בלבד. דרישות הקבלה משתנות בין מוסדות, חוגים ושנים, ותלויות גם בבגרות. תמיד כדאי לבדוק באתר המוסד.</p></div>`;
+    <p class="muted" style="margin:10px 0 0">מקור: הדוח הסטטיסטי של המרכז הארצי לבחינות ולהערכה לשנת ${N.year}. הציון שלך כאן הוא הערכה בלבד.</p></div>`;
 }
 const QLEGEND =`<div class="legend"><span><i class="sw" style="background:var(--good)"></i>נכונה</span><span><i class="sw" style="background:var(--bad)"></i>שגויה</span><span><i class="sw" style="background:var(--trap)"></i>שגויה — נפל במלכודת</span><span><i class="sw" style="background:var(--skip)"></i>לא נענתה</span><span><i class="sw gq">?</i>ניחוש</span></div>`;
 function potentialChart(now, pot, target) {
