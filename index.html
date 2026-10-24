@@ -1614,7 +1614,7 @@ async function sendEssayOrder() {
   if (viaMail && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return fail('נא להזין אימייל תקין', 'email');
   if (tmode === 'text' && topic.length < 10) return fail('נא להעתיק את נושא החיבור', 'topic');
   if (tmode === 'image' && !topicFile) return fail('נא לצרף צילום של המטלה', 'topicFile');
-  if (emode === 'text' && words < 120) return fail(`החיבור קצר מדי (${words} מילים). חיבור בבחינה הוא בדרך כלל 300 מילים ומעלה`, 'essay');
+  if (emode === 'text' && words < 120) return fail(`החיבור קצר מדי לבדיקה (${words} מילים, צריך לפחות 120). בבחינה כותבים בדרך כלל 25 עד 50 שורות`, 'essay');
   if (emode === 'text' && essay.length > 15000) return fail('החיבור ארוך מדי', 'essay');
   if (emode === 'docs' && !DOCS_RE.test(docs)) return fail('נא להדביק קישור מלא ל-Google Docs (מתחיל ב-https://docs.google.com)', 'docs');
   if (emode === 'docs' && !on('docsOk')) return fail('נא לוודא שהקישור פתוח לצפייה ולסמן', 'docsOk');
@@ -2174,6 +2174,12 @@ document.addEventListener('keydown', ev => {
 });
 document.addEventListener('visibilitychange', () => save());
 window.addEventListener('pagehide', () => save()); // סגירת הדפדפן הפנימי לא תמיד מפעילה visibilitychange
+// בדפדפן פנימי (טיקטוק/אינסטגרם) קישור לחלון חדש לפעמים לא נפתח בכלל, ולכן שם פותחים באותו חלון (ההתקדמות שמורה)
+if (INAPP) document.addEventListener('click', ev => {
+  const a = ev.target.closest('a[target="_blank"][href^="http"]');
+  if (!a || ev.defaultPrevented) return;
+  ev.preventDefault(); save(); location.href = a.href;
+});
 // ספירת פניות בווטסאפ (כל קישור או כפתור שפותח צ׳אט איתי)
 document.addEventListener('click', ev => {
   const a = ev.target.closest('a[href*="wa.me/' + CONFIG.teacherPhone + '"], [data-act="send-wa"], [data-act="c-wa"]');
