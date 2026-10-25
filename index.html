@@ -471,8 +471,8 @@ const CONFIG = {
   // uploadUrl: כתובת ה-Web App של src/essay_upload.gs (שומר קבצים ב-Drive). ריק = אין אפשרות לצרף קובץ או תמונה
   // free: true = תקופת הרצה, בדיקה חינם בלי תשלום (המחיר מוצג כ"בקרוב"). false = תשלום מראש בביט
   essayService: {price: 49, days: 3, free: false, uploadUrl: ''},
-  // srcField: מזהה שדה "מקור" (תשובה קצרה) בטופס, אם הוסף. null = לא נשלח מקור
-  statsForm: {url: 'https://docs.google.com/forms/d/e/1FAIpQLSc8N6M92-OUfN0L-QYKY14gxz8zNJ7-7FoM0aeNhvPi8ZCkpg/formResponse', field: 199736074, srcField: null},
+  // srcField: מזהה שדה "מקור" (תשובה קצרה) בטופס: טיקטוק ממומן / ישיר וכו'. null = לא נשלח מקור
+  statsForm: {url: 'https://docs.google.com/forms/d/e/1FAIpQLSc8N6M92-OUfN0L-QYKY14gxz8zNJ7-7FoM0aeNhvPi8ZCkpg/formResponse', field: 199736074, srcField: 683450033},
   // מזהה TikTok Pixel (מ-TikTok Ads Manager ← Events). נטען רק למי שהגיע מפרסומת (ttclid או utm_medium=paid). ריק = כבוי
   tiktokPixel: '',
   // קוד כניסה לדוח המורה: נשמר רק ה-SHA-256 שלו, כדי שלא יופיע בקוד. להחלפה: python -c "import hashlib;print(hashlib.sha256(b'NEW').hexdigest())"
